@@ -1,0 +1,20 @@
+{
+  "bill": {
+    "congress": 117,
+    "type": "HR",
+    "number": "3076",
+    "title": "Postal Service Reform Act of 2022",
+    "originChamber": "House",
+    "introducedDate": "2021-05-11",
+    "policyArea": { "name": "Government Operations and Politics" },
+    "latestAction": { "actionDate": "2022-04-06", "text": "Became Public Law No: 117-108." },
+    "updateDate": "2022-09-29",
+    "sponsors": [
+      { "bioguideId": "M000087", "fullName": "Rep. Maloney, Carolyn B. [D-NY-12]", "party": "D", "state": "NY" }
+    ],
+    "cosponsors": { "count": 102, "url": "https://api.congress.gov/v3/bill/117/hr/3076/cosponsors?format=json" },
+    "subjects": { "count": 35, "url": "https://api.congress.gov/v3/bill/117/hr/3076/subjects?format=json" },
+    "textVersions": { "count": 6, "url": "https://api.congress.gov/v3/bill/117/hr/3076/text?format=json" },
+    "url": "https://api.congress.gov/v3/bill/117/hr/3076?format=json"
+  }
+}

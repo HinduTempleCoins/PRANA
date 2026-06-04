@@ -1,0 +1,9 @@
+[
+  {
+    "title": "Attack on Titan",
+    "year": 2013,
+    "type": "anime",
+    "poster": "https://simkl.in/posters/aot.jpg",
+    "ids": { "simkl": 46099, "imdb": "tt2560140", "tmdb": 1429, "slug": "attack-on-titan" }
+  }
+]

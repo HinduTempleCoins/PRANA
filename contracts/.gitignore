@@ -1,0 +1,10 @@
+node_modules/
+artifacts/
+cache/
+out-forge/
+cache-forge/
+broadcast/
+typechain-types/
+coverage/
+coverage.json
+.env

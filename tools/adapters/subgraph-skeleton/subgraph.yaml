@@ -1,0 +1,70 @@
+# PRANA subgraph manifest (skeleton — NOT deployed).
+#
+# Indexes a V2-style Pair (Swap/Mint/Burn/Sync) and an ERC-20 token (Transfer)
+# on the PRANA chain. Addresses, startBlock, and chain `network` name are
+# placeholders to be filled when a self-hosted graph-node is stood up.
+#
+# `network` must match the network alias configured in the graph-node + the
+# JSON-RPC endpoint it is pointed at (PRANA L1, chainId 108369).
+
+specVersion: 0.0.5
+description: PRANA AMM + ERC-20 indexer (pools, swaps, liquidity, transfers)
+schema:
+  file: ./schema.graphql
+
+dataSources:
+  - kind: ethereum/contract
+    name: Pair
+    network: prana
+    source:
+      address: "0x0000000000000000000000000000000000000000" # PLACEHOLDER: pair address
+      abi: UniswapV2Pair
+      startBlock: 0                                          # PLACEHOLDER: deploy block
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/pair.ts                                    # mapping handlers (not in skeleton)
+      entities:
+        - Pair
+        - Token
+        - Swap
+        - Mint
+        - Burn
+        - Sync
+      abis:
+        - name: UniswapV2Pair
+          file: ./abis/UniswapV2Pair.json                    # copy from contracts/abis
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
+          handler: handleSwap
+        - event: Mint(indexed address,uint256,uint256)
+          handler: handleMint
+        - event: Burn(indexed address,uint256,uint256,indexed address)
+          handler: handleBurn
+        - event: Sync(uint112,uint112)
+          handler: handleSync
+
+  - kind: ethereum/contract
+    name: Token
+    network: prana
+    source:
+      address: "0x0000000000000000000000000000000000000000" # PLACEHOLDER: ERC-20 address
+      abi: ERC20
+      startBlock: 0                                          # PLACEHOLDER: deploy block
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      file: ./src/token.ts
+      entities:
+        - Token
+        - Transfer
+      abis:
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer

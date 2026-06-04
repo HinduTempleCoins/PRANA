@@ -1,0 +1,44 @@
+{
+  "$comment": "Qdrant collection schema + payload shape for research-paper documents (P3 useful-work / scientific-compute direction). Embedding dimension 768 matches common sentence-transformer / scientific-text models; change `vectors.size` to match the model actually used.",
+  "collection": {
+    "name": "research_papers",
+    "vectors": {
+      "size": 768,
+      "distance": "Cosine"
+    },
+    "payload_schema": {
+      "title": "keyword",
+      "year": "integer",
+      "doi": "keyword",
+      "authors": "keyword",
+      "tags": "keyword"
+    }
+  },
+  "point_shape": {
+    "$comment": "One Qdrant point per paper. `id` is a stable UUID/integer; the human DOI lives in payload. `vector` is the embedding of (title + abstract).",
+    "id": "<uuid-or-int>",
+    "vector": "<float[768] embedding of title+abstract>",
+    "payload": {
+      "title": "string",
+      "abstract": "string",
+      "authors": ["string"],
+      "year": 0,
+      "doi": "string",
+      "tags": ["string"],
+      "embedding_model": "string"
+    }
+  },
+  "example_point": {
+    "id": "f1d2c3b4-0000-4000-8000-000000000001",
+    "vector": "[0.0123, -0.0456, 0.0789, ...]  (768 floats, abbreviated)",
+    "payload": {
+      "title": "Man's Greatest Achievement",
+      "abstract": "All perceptible matter comes from a primary substance filling all space, acted upon by a creative force, calling into existence all things and phenomena.",
+      "authors": ["Nikola Tesla"],
+      "year": 1907,
+      "doi": "10.0000/example.tesla.1907",
+      "tags": ["aether", "energy", "physics"],
+      "embedding_model": "sentence-transformers/all-mpnet-base-v2"
+    }
+  }
+}

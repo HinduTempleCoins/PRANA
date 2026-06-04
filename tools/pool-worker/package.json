@@ -1,0 +1,16 @@
+{
+  "name": "@prana/pool-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "PRANA auto-switching worker daemon (SS1 / backlog XX17 + PR9 vardiff). GridCoin-style contributor agent: connects to a coordinator, does HASH (microhash) or TASK (AI) work, submits shares. SKELETON — stratum/CUDA stubbed; control flow, vardiff, lane-switching and the share->credit shapes are real and testable.",
+  "scripts": {
+    "start": "node src/index.mjs",
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "author": "Van Kush Family Research Institute (VKFRI)",
+  "license": "MIT"
+}

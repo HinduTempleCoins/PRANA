@@ -1,0 +1,32 @@
+[
+  {
+    "itemId": 30000,
+    "name": "Prana Wisp",
+    "face": "round",
+    "palette": { "spirit": "#7fd6ff", "accent": "#bff0ff", "lantern": "#ffd27f" }
+  },
+  {
+    "itemId": 30001,
+    "name": "Ember Shade",
+    "face": "round",
+    "palette": { "spirit": "#ff9a7f", "accent": "#ffe2c8", "lantern": "#7fffd6" }
+  },
+  {
+    "itemId": 30002,
+    "name": "Void Spirit",
+    "face": "wisp",
+    "palette": { "spirit": "#b07fff", "accent": "#e6ccff", "lantern": "#ffe27f" }
+  },
+  {
+    "itemId": 30003,
+    "name": "Solar Phantom",
+    "face": "wisp",
+    "palette": { "spirit": "#ffe27f", "accent": "#fff7d6", "lantern": "#7fd6ff" }
+  },
+  {
+    "itemId": 30004,
+    "name": "Verdant Shade",
+    "face": "round",
+    "palette": { "spirit": "#7fffb0", "accent": "#ccffe0", "lantern": "#ff9a7f" }
+  }
+]

@@ -1,0 +1,144 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vankushfamily.com/schemas/prana/biz/credit-bot-fsm.schema.json",
+  "title": "Business Credit Bot — progress-tracker FSM",
+  "description": "Generic, jurisdiction-neutral finite-state machine the Business Credit Bot (FF2-1) uses to track where a user is along the publicly-documented business-credit pathway (FF2-2). GENERAL INFORMATION ONLY — NOT legal/tax/financial advice. The FSM is the deterministic decider: given (currentState, a validated user-attested milestone) the next state is a pure function. The language model never drives transitions. State is a content-free pointer: it holds NO EIN/SSN/bank/card/PII and moves NO money. This schema defines BOTH (a) the machine definition (states + transitions + gates) and (b) the per-user runtime state pointer.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "initialState", "states", "transitions"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Semver of this machine definition.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "title": { "type": "string" },
+    "disclaimerRequired": {
+      "type": "boolean",
+      "default": true,
+      "description": "When true, the response composer MUST append the standard disclaimer to every substantive answer. Always true in production."
+    },
+    "initialState": {
+      "type": "string",
+      "description": "State id a brand-new user starts in. Must be present in states[].id."
+    },
+    "states": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Every node in the pathway. Order in this array is the canonical pathway order.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "kbRef"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$",
+            "description": "Stable state id. MUST match the bot state id in the credit-pathway KB (FF2-2), e.g. 'entity-good-standing', 'ein', 'net30-tradelines'."
+          },
+          "label": { "type": "string", "description": "Human-readable name." },
+          "kbRef": {
+            "type": "string",
+            "description": "Pointer to the KB step this state explains (e.g. 'credit-pathway-kb.md#ein'). Grounds the RAG brain's explanation for this state."
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["start", "step", "ongoing", "terminal"],
+            "default": "step",
+            "description": "start = initial; step = a normal pathway step; ongoing = re-entrant maintenance (e.g. 'maintain'); terminal = end of the linear pathway."
+          },
+          "cost": {
+            "type": "string",
+            "enum": ["free", "paid", "varies"],
+            "description": "Generic cost posture of the step. 'free' steps (EIN, D-U-N-S) MUST be presented as free; the bot must not imply payment is required."
+          },
+          "officialSource": {
+            "type": "string",
+            "description": "Generic, verify-it-yourself source (e.g. 'IRS', 'Secretary of State', 'Dun & Bradstreet', 'the bank/vendor/issuer directly'). NEVER a backend/aggregator name."
+          },
+          "summary": {
+            "type": "string",
+            "description": "One-line generic description of the step. No advice, no PII."
+          }
+        }
+      }
+    },
+    "transitions": {
+      "type": "array",
+      "description": "Directed edges. A transition fires only when its 'from' equals the user's current state AND every gate (prerequisite) in 'requires' is in the user's completed[] set AND the user has attested 'milestone'. Deterministic: no model in the loop.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["from", "to", "milestone"],
+        "properties": {
+          "from": {
+            "type": "string",
+            "description": "Source state id (must exist in states[].id)."
+          },
+          "to": {
+            "type": "string",
+            "description": "Destination state id (must exist in states[].id)."
+          },
+          "milestone": {
+            "type": "string",
+            "description": "The user-attested fact that triggers this transition, e.g. 'ein-obtained', 'business-bank-opened', 'duns-issued'. The bot ASKS and the user ATTESTS; the bot does NOT log into any third party to verify."
+          },
+          "requires": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": [],
+            "description": "Gate: state ids that must already be in the user's completed[] set before this transition may fire. Enforces the pathway's prerequisites (e.g. net30-tradelines requires ein + business-bank-account + duns). A user cannot talk the FSM past a gate."
+          }
+        }
+      }
+    },
+    "prohibited": {
+      "type": "array",
+      "description": "Topics the bot must REFUSE (associated with fraud). Mirrors the PROHIBITED section of the KB. Checked by the intake guard BEFORE retrieval/transition.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "match", "refusal"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "match": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Generic trigger keywords/phrases (e.g. 'cpn', 'synthetic identity', 'seasoned tradeline', 'boost fast', 'ein no ssn')."
+          },
+          "refusal": {
+            "type": "string",
+            "description": "The canned refusal + redirect-to-legitimate-step message."
+          },
+          "redirectTo": {
+            "type": "string",
+            "description": "State id the user should be pointed back to (the legitimate step)."
+          }
+        }
+      }
+    },
+    "runtimeState": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "OPTIONAL embedded example of the PER-USER state pointer. In production this is stored per user, NOT inside the machine definition. It is intentionally content-free: NO EIN/SSN/bank/card/PII, NO money.",
+      "required": ["currentState", "completed"],
+      "properties": {
+        "userRef": {
+          "type": "string",
+          "description": "Opaque, non-PII handle (e.g. a hashed/random id). NOT a name, email, EIN, or SSN."
+        },
+        "currentState": {
+          "type": "string",
+          "description": "The state id the user is currently on."
+        },
+        "completed": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "State ids the user has attested complete (the gate set)."
+        },
+        "startedAt": { "type": "string", "format": "date-time" },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

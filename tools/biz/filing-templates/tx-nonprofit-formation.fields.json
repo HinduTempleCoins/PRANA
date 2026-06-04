@@ -1,0 +1,19 @@
+{
+  "formId": "tx-nonprofit-formation",
+  "title": "Certificate of Formation — Nonprofit Corporation",
+  "officialFormNumber": "TX SOS Form 202",
+  "jurisdiction": "US-TX",
+  "agency": "Texas Secretary of State",
+  "category": "formation",
+  "disclaimer": "Self-help document service — NOT legal or tax advice. Nonprofit formation and any later federal tax-exemption are separate steps with their own requirements; verify with the Texas Secretary of State and the IRS and consult a licensed professional. You file with the Texas SOS yourself.",
+  "fields": [
+    { "name": "entity_name", "label": "Nonprofit corporation name", "type": "string", "required": true, "help": "Must be distinguishable from existing TX entities. Check availability with the TX SOS." },
+    { "name": "registered_agent_name", "label": "Registered agent name", "type": "string", "required": true, "help": "Consenting registered agent with a Texas address. See the registered-agent template." },
+    { "name": "registered_office_address", "label": "Registered office address (TX)", "type": "address", "required": true, "help": "Physical Texas street address (not a PO box)." },
+    { "name": "has_members", "label": "Will the corporation have members?", "type": "boolean", "required": true, "help": "Texas nonprofit corporations may or may not have members; the structure affects governance." },
+    { "name": "directors", "label": "Initial directors", "type": "text", "required": true, "sensitive": true, "help": "Names and addresses of the initial board of directors (TX generally requires at least three)." },
+    { "name": "organizer_name", "label": "Organizer name", "type": "string", "required": true, "sensitive": true, "help": "The person forming the corporation (signs the certificate)." },
+    { "name": "purpose", "label": "Purpose statement", "type": "text", "required": true, "help": "Statement of the nonprofit purpose. NOTE: if you intend to seek 501(c)(3) status later, the IRS generally requires specific purpose-limitation and dissolution language — verify the federal requirements separately (see the 1023 template)." },
+    { "name": "includes_501c3_language", "label": "Include 501(c)(3) purpose/dissolution language?", "type": "boolean", "required": false, "help": "Whether the user is including the IRS-required clauses for a planned federal exemption. The USER decides; verify against current IRS guidance." }
+  ]
+}

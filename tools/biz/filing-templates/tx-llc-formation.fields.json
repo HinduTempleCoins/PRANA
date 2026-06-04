@@ -1,0 +1,19 @@
+{
+  "formId": "tx-llc-formation",
+  "title": "Certificate of Formation — Limited Liability Company",
+  "officialFormNumber": "TX SOS Form 205",
+  "jurisdiction": "US-TX",
+  "agency": "Texas Secretary of State",
+  "category": "formation",
+  "disclaimer": "Self-help document service — NOT legal or tax advice. Forms, fees, and requirements change; verify with the Texas Secretary of State and consult a licensed professional. You file with the Texas SOS yourself.",
+  "fields": [
+    { "name": "entity_name", "label": "LLC name", "type": "string", "required": true, "help": "Must be distinguishable from existing TX entities and include an LLC designator (e.g. 'LLC'). Check name availability with the TX SOS." },
+    { "name": "registered_agent_type", "label": "Registered agent type", "type": "enum", "required": true, "enum": ["individual", "organization"], "help": "TX requires a registered agent with a Texas address. The agent must consent. See the registered-agent template." },
+    { "name": "registered_agent_name", "label": "Registered agent name", "type": "string", "required": true, "help": "Name of the consenting registered agent." },
+    { "name": "registered_office_address", "label": "Registered office address (TX)", "type": "address", "required": true, "help": "A physical Texas street address (not a PO box) where process can be served." },
+    { "name": "management_structure", "label": "Management structure", "type": "enum", "required": true, "enum": ["member-managed", "manager-managed"], "help": "Neutral list — the USER selects how the LLC is managed. The tool does not advise which to choose." },
+    { "name": "governing_persons", "label": "Initial members/managers", "type": "text", "required": true, "sensitive": true, "help": "Names and addresses of the initial governing persons." },
+    { "name": "organizer_name", "label": "Organizer name", "type": "string", "required": true, "sensitive": true, "help": "The person forming the LLC (signs the certificate)." },
+    { "name": "purpose", "label": "Purpose", "type": "text", "required": false, "help": "Often a general lawful-purpose statement; verify TX requirements." }
+  ]
+}

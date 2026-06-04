@@ -1,0 +1,31 @@
+[
+  {
+    "source_id": 203,
+    "name": "Netflix",
+    "type": "sub",
+    "region": "US",
+    "web_url": "https://www.netflix.com/title/70131314",
+    "format": "HD",
+    "price": null,
+    "seasons": null,
+    "episodes": null
+  },
+  {
+    "source_id": 387,
+    "name": "Tubi",
+    "type": "free",
+    "region": "US",
+    "web_url": "https://tubitv.com/movies/inception",
+    "format": "SD",
+    "price": null
+  },
+  {
+    "source_id": 10,
+    "name": "Amazon Prime Video",
+    "type": "rent",
+    "region": "US",
+    "web_url": "https://www.amazon.com/dp/inception",
+    "format": "4K",
+    "price": 3.99
+  }
+]

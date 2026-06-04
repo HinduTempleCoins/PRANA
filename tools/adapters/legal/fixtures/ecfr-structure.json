@@ -1,0 +1,26 @@
+{
+  "type": "title",
+  "label": "Title 40 - Protection of Environment",
+  "label_level": "Title 40",
+  "identifier": "40",
+  "reserved": false,
+  "children": [
+    {
+      "type": "chapter",
+      "label": "Chapter I - Environmental Protection Agency",
+      "label_level": "Chapter I",
+      "identifier": "I",
+      "reserved": false,
+      "children": [
+        {
+          "type": "part",
+          "label": "Part 60 - Standards of Performance for New Stationary Sources",
+          "label_level": "Part 60",
+          "identifier": "60",
+          "reserved": false,
+          "children": []
+        }
+      ]
+    }
+  ]
+}

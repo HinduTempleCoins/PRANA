@@ -1,0 +1,14 @@
+{
+  "bitcoin": {
+    "usd": 67234.0,
+    "usd_24h_change": -1.2345,
+    "eur": 61880.5,
+    "eur_24h_change": -1.05
+  },
+  "ethereum": {
+    "usd": 3512.77,
+    "usd_24h_change": 2.4567,
+    "eur": 3233.1,
+    "eur_24h_change": 2.6
+  }
+}

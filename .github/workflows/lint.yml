@@ -1,0 +1,48 @@
+name: lint
+
+# Super-Linter (slim) for the lightweight file types only: JS, JSON, YAML, MD.
+# Solidity is deliberately NOT linted here — that stays with the dedicated
+# solhint task in the contracts pipeline (VALIDATE_SOLIDITY is turned off below).
+# Runs on PRs and scopes to the files changed in the PR (VALIDATE_ALL_CODEBASE
+# false) so it's fast and only gates what the PR touched.
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  super-lint:
+    name: super-linter (slim, changed files)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Lets Super-Linter compute the changed-files diff against the base ref.
+      statuses: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Full history needed so the action can diff PR head against base.
+          fetch-depth: 0
+
+      - name: Lint changed files
+        uses: github/super-linter/slim@v6
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Only the PR's changed files, not the whole tree.
+          VALIDATE_ALL_CODEBASE: false
+
+          # --- Enable ONLY JS / JSON / YAML / MD ---------------------------
+          # When any VALIDATE_* is set true, Super-Linter switches to an
+          # allow-list: every linter not explicitly enabled stays off. So this
+          # block is sufficient to keep Solidity (and everything else) silent.
+          VALIDATE_JAVASCRIPT_ES: true
+          VALIDATE_JSON: true
+          VALIDATE_YAML: true
+          VALIDATE_MARKDOWN: true
+
+          # Explicit belt-and-suspenders: Super-Linter has no native Solidity
+          # validator, but if a future version adds one this keeps it off.
+          VALIDATE_SOLIDITY: false

@@ -1,0 +1,345 @@
+[
+  {
+    "inputs": [],
+    "name": "BadTimeRange",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotRegistered",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "OutOfScope",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "SpendCapExceeded",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ValueCapExceeded",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroKey",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "key",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "allowedTarget",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes4",
+        "name": "allowedSelector",
+        "type": "bytes4"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint48",
+        "name": "validAfter",
+        "type": "uint48"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint48",
+        "name": "validUntil",
+        "type": "uint48"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "valueCap",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "spendCap",
+        "type": "uint256"
+      }
+    ],
+    "name": "SessionRegistered",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "key",
+        "type": "address"
+      }
+    ],
+    "name": "SessionRevoked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "key",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "spent",
+        "type": "uint256"
+      }
+    ],
+    "name": "SessionSpent",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "key",
+        "type": "address"
+      },
+      {
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "recordSpend",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "key",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "allowedTarget",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes4",
+        "name": "allowedSelector",
+        "type": "bytes4"
+      },
+      {
+        "internalType": "uint48",
+        "name": "validAfter",
+        "type": "uint48"
+      },
+      {
+        "internalType": "uint48",
+        "name": "validUntil",
+        "type": "uint48"
+      },
+      {
+        "internalType": "uint256",
+        "name": "valueCap",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "spendCap",
+        "type": "uint256"
+      }
+    ],
+    "name": "registerSession",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "key",
+        "type": "address"
+      }
+    ],
+    "name": "remaining",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "key",
+        "type": "address"
+      }
+    ],
+    "name": "revokeSession",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "key",
+        "type": "address"
+      }
+    ],
+    "name": "sessionOf",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint48",
+            "name": "validAfter",
+            "type": "uint48"
+          },
+          {
+            "internalType": "uint48",
+            "name": "validUntil",
+            "type": "uint48"
+          },
+          {
+            "internalType": "address",
+            "name": "allowedTarget",
+            "type": "address"
+          },
+          {
+            "internalType": "bytes4",
+            "name": "allowedSelector",
+            "type": "bytes4"
+          },
+          {
+            "internalType": "uint256",
+            "name": "valueCap",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spendCap",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "spent",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "active",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct SessionKeyValidator.Session",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "account",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "key",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "target",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes4",
+        "name": "selector",
+        "type": "bytes4"
+      },
+      {
+        "internalType": "uint256",
+        "name": "value",
+        "type": "uint256"
+      }
+    ],
+    "name": "validateSession",
+    "outputs": [
+      {
+        "internalType": "uint48",
+        "name": "validAfter",
+        "type": "uint48"
+      },
+      {
+        "internalType": "uint48",
+        "name": "validUntil",
+        "type": "uint48"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "id": 316847,
+  "name": "Temple Bell.wav",
+  "username": "InspectorJ",
+  "license": "http://creativecommons.org/licenses/by-nc/4.0/",
+  "url": "https://freesound.org/people/InspectorJ/sounds/316847/",
+  "duration": 6.42,
+  "previews": {
+    "preview-hq-mp3": "https://freesound.org/data/previews/316/316847-hq.mp3",
+    "preview-lq-mp3": "https://freesound.org/data/previews/316/316847-lq.mp3"
+  },
+  "download": "https://freesound.org/apiv2/sounds/316847/download/",
+  "tags": ["bell", "temple", "metal", "ring"],
+  "description": "A struck temple bell, recorded close.",
+  "images": {
+    "waveform_m": "https://freesound.org/data/displays/316/316847_wave_m.png",
+    "spectral_m": "https://freesound.org/data/displays/316/316847_spec_m.png"
+  }
+}

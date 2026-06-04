@@ -1,0 +1,32 @@
+[
+  {
+    "itemId": 30000,
+    "name": "Prana Default",
+    "head": "round",
+    "palette": { "head": "#7fd6ff", "body": "#0a3a66", "glow": "#bff0ff" }
+  },
+  {
+    "itemId": 30001,
+    "name": "Prana Ember",
+    "head": "round",
+    "palette": { "head": "#ffd27f", "body": "#7a2a0a", "glow": "#fff2c8" }
+  },
+  {
+    "itemId": 30002,
+    "name": "Void Serpent",
+    "head": "diamond",
+    "palette": { "head": "#b07fff", "body": "#1a0a3a", "glow": "#e6ccff" }
+  },
+  {
+    "itemId": 30003,
+    "name": "Solar Gold",
+    "head": "diamond",
+    "palette": { "head": "#ffe27f", "body": "#3a2e0a", "glow": "#fff7d6" }
+  },
+  {
+    "itemId": 30004,
+    "name": "Naga Verdant",
+    "head": "round",
+    "palette": { "head": "#7fffb0", "body": "#0a3a26", "glow": "#ccffe0" }
+  }
+]

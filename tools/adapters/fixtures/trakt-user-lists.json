@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Watchlist 2026",
+    "description": "Stuff to watch this year",
+    "privacy": "public",
+    "item_count": 42,
+    "likes": 7,
+    "ids": { "trakt": 555, "slug": "watchlist-2026" }
+  }
+]

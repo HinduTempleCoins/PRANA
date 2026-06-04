@@ -1,0 +1,25 @@
+{
+  "bills": [
+    {
+      "congress": 118,
+      "type": "HR",
+      "number": "3076",
+      "title": "Postal Service Reform Act of 2022",
+      "originChamber": "House",
+      "latestAction": { "actionDate": "2022-04-06", "text": "Became Public Law No: 117-108." },
+      "updateDate": "2022-09-29",
+      "url": "https://api.congress.gov/v3/bill/117/hr/3076?format=json"
+    },
+    {
+      "congress": 118,
+      "type": "S",
+      "number": "1234",
+      "title": "An Act to improve government transparency",
+      "originChamber": "Senate",
+      "latestAction": { "actionDate": "2023-05-01", "text": "Read twice and referred to the Committee on Homeland Security." },
+      "updateDate": "2023-05-02",
+      "url": "https://api.congress.gov/v3/bill/118/s/1234?format=json"
+    }
+  ],
+  "pagination": { "count": 2, "next": null, "prev": null }
+}

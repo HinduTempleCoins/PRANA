@@ -1,0 +1,21 @@
+{
+  "page": 1,
+  "pages": 5,
+  "total": 100,
+  "hits": [
+    {
+      "id": "abc123",
+      "title": "Ocean Waves",
+      "max_width": 1920,
+      "max_height": 1080,
+      "author": "Coverr",
+      "poster": "https://storage.coverr.co/posters/ocean-waves.jpg",
+      "thumbnail": "https://storage.coverr.co/posters/ocean-waves-thumb.jpg",
+      "urls": {
+        "page": "https://coverr.co/videos/ocean-waves-abc123",
+        "mp4": "https://storage.coverr.co/videos/ocean-waves.mp4",
+        "mp4_download": "https://storage.coverr.co/videos/ocean-waves-download.mp4"
+      }
+    }
+  ]
+}

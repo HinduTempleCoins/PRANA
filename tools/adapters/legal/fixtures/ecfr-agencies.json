@@ -1,0 +1,16 @@
+{
+  "agencies": [
+    {
+      "name": "Environmental Protection Agency",
+      "short_name": "EPA",
+      "slug": "environmental-protection-agency",
+      "cfr_references": [{ "title": 40, "chapter": "I" }]
+    },
+    {
+      "name": "Department of the Treasury",
+      "short_name": "TREAS",
+      "slug": "treasury-department",
+      "cfr_references": [{ "title": 31, "chapter": "I" }]
+    }
+  ]
+}

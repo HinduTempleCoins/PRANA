@@ -1,0 +1,18 @@
+[
+  {
+    "gecko_id": "ethereum",
+    "tvl": 58400000000.0,
+    "tokenSymbol": "ETH",
+    "cmcId": "1027",
+    "name": "Ethereum",
+    "chainId": 1
+  },
+  {
+    "gecko_id": "binancecoin",
+    "tvl": 5100000000.0,
+    "tokenSymbol": "BNB",
+    "cmcId": "1839",
+    "name": "BSC",
+    "chainId": 56
+  }
+]

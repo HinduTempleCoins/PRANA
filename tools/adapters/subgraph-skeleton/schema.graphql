@@ -1,0 +1,92 @@
+# PRANA subgraph schema (skeleton — not deployed).
+#
+# Entities indexed from V2-style Pair events (Swap, Mint, Burn, Sync) and the
+# ERC-20 Transfer event. IDs follow The Graph conventions:
+#   - immutable event entities: id = "<txHash>-<logIndex>"
+#   - mutable aggregate entities (Pair, Token): id = checksummed address
+
+type Token @entity {
+  id: ID!                       # token contract address
+  symbol: String!
+  name: String!
+  decimals: Int!
+  totalSupply: BigInt!
+  transferCount: BigInt!
+  transfers: [Transfer!]! @derivedFrom(field: "token")
+}
+
+type Pair @entity {
+  id: ID!                       # pair contract address
+  token0: Token!
+  token1: Token!
+  reserve0: BigInt!             # last Sync reserve
+  reserve1: BigInt!
+  totalSupply: BigInt!          # LP token supply
+  createdAtBlock: BigInt!
+  createdAtTimestamp: BigInt!
+  swaps: [Swap!]! @derivedFrom(field: "pair")
+  mints: [Mint!]! @derivedFrom(field: "pair")
+  burns: [Burn!]! @derivedFrom(field: "pair")
+  syncs: [Sync!]! @derivedFrom(field: "pair")
+}
+
+type Swap @entity(immutable: true) {
+  id: ID!                       # "<txHash>-<logIndex>"
+  pair: Pair!
+  sender: Bytes!
+  to: Bytes!
+  amount0In: BigInt!
+  amount1In: BigInt!
+  amount0Out: BigInt!
+  amount1Out: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transaction: Bytes!
+  logIndex: BigInt!
+}
+
+type Mint @entity(immutable: true) {
+  id: ID!
+  pair: Pair!
+  sender: Bytes!
+  amount0: BigInt!
+  amount1: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transaction: Bytes!
+  logIndex: BigInt!
+}
+
+type Burn @entity(immutable: true) {
+  id: ID!
+  pair: Pair!
+  sender: Bytes!
+  to: Bytes!
+  amount0: BigInt!
+  amount1: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transaction: Bytes!
+  logIndex: BigInt!
+}
+
+type Sync @entity(immutable: true) {
+  id: ID!
+  pair: Pair!
+  reserve0: BigInt!
+  reserve1: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+}
+
+type Transfer @entity(immutable: true) {
+  id: ID!                       # "<txHash>-<logIndex>"
+  token: Token!
+  from: Bytes!
+  to: Bytes!
+  value: BigInt!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+  transaction: Bytes!
+  logIndex: BigInt!
+}

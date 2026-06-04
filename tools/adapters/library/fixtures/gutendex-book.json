@@ -1,0 +1,22 @@
+{
+  "id": 1342,
+  "title": "Pride and Prejudice",
+  "authors": [{ "name": "Austen, Jane", "birth_year": 1775, "death_year": 1817 }],
+  "subjects": [
+    "Courtship -- Fiction",
+    "England -- Fiction",
+    "Love stories",
+    "Sisters -- Fiction"
+  ],
+  "bookshelves": ["Best Books Ever Listings", "Harvard Classics"],
+  "languages": ["en"],
+  "copyright": false,
+  "media_type": "Text",
+  "formats": {
+    "text/html": "https://www.gutenberg.org/ebooks/1342.html.images",
+    "application/epub+zip": "https://www.gutenberg.org/ebooks/1342.epub3.images",
+    "text/plain; charset=us-ascii": "https://www.gutenberg.org/ebooks/1342.txt.utf-8",
+    "image/jpeg": "https://www.gutenberg.org/cache/epub/1342/pg1342.cover.medium.jpg"
+  },
+  "download_count": 999999
+}

@@ -1,0 +1,21 @@
+{
+  "name": "@prana/inference-router",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "PRANA free-API fallback inference router (TASK XX19). Routes an inference request across a PRIORITY LADDER of backends — (1) local river nodes / worker swarm, (2) free/community API tiers, (3) a paid/cloud fallback — and falls through on failure or ratelimit. This is the 'Hathor pulls from whichever nodes are live' router. SKELETON — backend infer()/healthCheck() are STUBBED to deterministic synthetic output; the router fallthrough, priority ordering, and per-backend token-bucket ratelimiting are real and unit-testable.",
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    "./router": "./src/router.mjs",
+    "./backends": "./src/backends.mjs",
+    "./ratelimit": "./src/ratelimit.mjs",
+    "./river-client": "./src/river-client.mjs"
+  },
+  "author": "Van Kush Family Research Institute (VKFRI)",
+  "license": "MIT"
+}

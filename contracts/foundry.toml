@@ -1,0 +1,46 @@
+# PRANA — Foundry config. Lives BESIDE the existing Hardhat setup (hardhat.config.js)
+# and shares the same source tree (contracts/contracts/) so neither toolchain owns
+# the sources. Foundry writes to its own out/cache/test dirs to avoid clobbering
+# Hardhat's artifacts/ and cache/.
+#
+# Keys verified against Foundry config reference (foundry.toml [profile.default]):
+#   src, test, out, libs, cache_path, solc, evm_version, optimizer, optimizer_runs,
+#   remappings, [fmt], [invariant], [fuzz].
+[profile.default]
+src = "contracts"               # shared with Hardhat — sources stay in contracts/contracts/
+test = "test-forge"             # Solidity (forge) tests, separate from Hardhat's mocha test/
+out = "out-forge"              # forge build output (gitignored) — NOT Hardhat's artifacts/
+cache_path = "cache-forge"     # forge cache (gitignored) — NOT Hardhat's cache/
+libs = ["node_modules", "lib"]  # OZ comes from node_modules (Hardhat pins 5.0.2); forge-std from lib
+solc = "0.8.24"                # match hardhat.config.js solidity.version
+evm_version = "london"          # match hardhat.config.js settings.evmVersion (PoW chain fork set)
+optimizer = true                # match hardhat optimizer.enabled
+optimizer_runs = 200            # match hardhat optimizer.runs
+# Remappings are also in remappings.txt (so editors/LSP pick them up); kept here too for clarity.
+remappings = [
+    "@openzeppelin/=node_modules/@openzeppelin/",
+    "forge-std/=lib/forge-std/src/",
+]
+fs_permissions = [{ access = "read", path = "./" }]
+
+# J6 — forge fmt configuration. Defaults tuned for readability; `make fmt-check` enforces.
+[fmt]
+line_length = 120
+tab_width = 4
+bracket_spacing = false
+int_types = "long"
+quote_style = "double"
+number_underscore = "preserve"
+multiline_func_header = "attributes_first"
+sort_imports = true
+
+# J9+S16 — stateful invariant settings. Kept modest for CI sanity (fast, deterministic-ish).
+[invariant]
+runs = 64
+depth = 32
+fail_on_revert = false          # handlers bound inputs; reverts from edge cases shouldn't fail the run
+call_override = false
+shrink_run_limit = 256
+
+[fuzz]
+runs = 256

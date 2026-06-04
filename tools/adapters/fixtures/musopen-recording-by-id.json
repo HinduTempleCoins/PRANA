@@ -1,0 +1,13 @@
+{
+  "id": 50271,
+  "title": "Symphony No. 5 in C minor, Op. 67 - I. Allegro con brio",
+  "slug": "symphony-no-5-i-allegro-con-brio",
+  "composer": { "name": "Ludwig van Beethoven" },
+  "performers": [{ "name": "Fulda Symphonic Orchestra" }],
+  "instrument": { "name": "Orchestra" },
+  "period": { "name": "Classical" },
+  "duration": 444,
+  "url": "https://musopen.org/music/recording/symphony-no-5-i.mp3",
+  "download_url": "https://musopen.org/music/recording/symphony-no-5-i.mp3",
+  "license": "Public Domain"
+}

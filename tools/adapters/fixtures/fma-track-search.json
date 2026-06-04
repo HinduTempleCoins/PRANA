@@ -1,0 +1,35 @@
+{
+  "title": "Free Music Archive - Track Search",
+  "aTracks": [
+    {
+      "track_id": "20901",
+      "track_title": "Enthusiast",
+      "track_url": "https://freemusicarchive.org/music/Tours/Enthusiast",
+      "track_file_url": "https://files.freemusicarchive.org/storage/Tours/Enthusiast.mp3",
+      "track_image_file": "https://freemusicarchive.org/img/Tours.jpg",
+      "track_duration": "03:54",
+      "artist_id": "8623",
+      "artist_name": "Tours",
+      "artist_url": "https://freemusicarchive.org/music/Tours",
+      "album_title": "Enthusiast",
+      "license_url": "http://creativecommons.org/licenses/by/4.0/",
+      "license_title": "Attribution 4.0 International",
+      "track_genres": [{ "genre_title": "Electronic" }]
+    },
+    {
+      "track_id": "44850",
+      "track_title": "Night Owl",
+      "track_url": "https://freemusicarchive.org/music/Broke_For_Free/Directionless_EP/Night_Owl",
+      "track_file_url": "https://files.freemusicarchive.org/storage/Broke_For_Free/Night_Owl.mp3",
+      "track_image_file": "https://freemusicarchive.org/img/BrokeForFree.jpg",
+      "track_duration": "210",
+      "artist_id": "8901",
+      "artist_name": "Broke For Free",
+      "artist_url": "https://freemusicarchive.org/music/Broke_For_Free",
+      "album_title": "Directionless EP",
+      "license_url": "http://creativecommons.org/licenses/by-nc/3.0/",
+      "license_title": "Attribution-NonCommercial 3.0",
+      "track_genres": [{ "genre_title": "Instrumental" }]
+    }
+  ]
+}

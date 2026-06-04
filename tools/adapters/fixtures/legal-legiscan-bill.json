@@ -1,0 +1,34 @@
+{
+  "status": "OK",
+  "bill": {
+    "bill_id": 1700001,
+    "bill_number": "HB1",
+    "title": "An Act relating to public records transparency",
+    "description": "Relating to public access to governmental records and the cost of providing copies.",
+    "state": "TX",
+    "session": {
+      "session_id": 2000,
+      "session_name": "88th Legislature Regular Session",
+      "year_start": 2024
+    },
+    "status": 1,
+    "status_date": "2024-03-15",
+    "sponsors": [
+      { "name": "Jane Q. Public", "role": "Rep", "party": "D", "sponsor_type_id": 1 },
+      { "name": "John R. Doe", "role": "Sen", "party": "R", "sponsor_type_id": 2 }
+    ],
+    "subjects": [
+      { "subject_id": 10, "subject_name": "Public Records" },
+      { "subject_id": 11, "subject_name": "Government Operations" }
+    ],
+    "history": [
+      { "date": "2024-01-09", "action": "Filed", "chamber": "H", "chamber_id": 1 },
+      { "date": "2024-03-15", "action": "Referred to Committee on State Affairs", "chamber": "H", "chamber_id": 1 }
+    ],
+    "texts": [
+      { "doc_id": 555, "type": "Introduced", "mime": "application/pdf", "url": "https://legiscan.com/TX/text/HB1/id/555" }
+    ],
+    "url": "https://legiscan.com/TX/bill/HB1/2024",
+    "state_link": "https://capitol.texas.gov/BillLookup/History.aspx?Bill=HB1"
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vankushfamily.com/schemas/prana/biz/filing-compliance-calendar.schema.json",
+  "title": "Filing compliance calendar",
+  "description": "Generic recurring-deadline / fee / reinstatement-trigger model the Business Filing App's compliance-monitor layer (FF2-4 §1 step 6) drives. GENERAL INFORMATION ONLY — NOT legal or tax advice. Reminders only: this model NEVER moves money and NEVER files anything; the user files and pays each agency directly. No founder PII; all amounts/dates are generic examples or user-supplied. Deadlines/fees vary by jurisdiction and change — verify against the official agency.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "jurisdiction", "obligations"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semver of this calendar definition."
+    },
+    "jurisdiction": {
+      "type": "string",
+      "description": "e.g. 'US-Federal', 'US-TX'. Obligations are per-jurisdiction (TX-deep, expandable)."
+    },
+    "disclaimer": {
+      "type": "string",
+      "description": "Standard self-help-document-service disclaimer. Reminders only; verify with the official agency."
+    },
+    "obligations": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Recurring (or one-time) compliance obligations.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "agency", "appliesTo", "cadence", "trigger"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9-]+$", "description": "Stable obligation id." },
+          "title": { "type": "string", "description": "Human-readable obligation name." },
+          "agency": { "type": "string", "description": "Official agency the user files/pays directly (e.g. 'IRS', 'Texas Comptroller', 'Texas Secretary of State')." },
+          "category": {
+            "type": "string",
+            "enum": ["annual-return", "periodic-report", "franchise-tax", "registered-agent", "renewal", "exemption-maintenance", "other"],
+            "description": "Generic category."
+          },
+          "appliesTo": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "enum": ["llc", "corporation", "nonprofit-corporation", "exempt-org", "any"] },
+            "description": "Entity types this obligation applies to."
+          },
+          "cadence": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["frequency"],
+            "description": "Recurrence rule.",
+            "properties": {
+              "frequency": { "type": "string", "enum": ["once", "annual", "biennial", "quarterly", "monthly"], "description": "How often the obligation recurs." },
+              "dueRule": {
+                "type": "string",
+                "description": "Generic description of WHEN it is due (e.g. 'May 15 annually', 'anniversary of formation', '4 months 15 days after fiscal year-end'). Verify exact dates with the agency; they change."
+              },
+              "leadDays": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "Days before the due date to remind the user."
+              }
+            }
+          },
+          "fee": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "GENERIC/example fee info. The app does NOT collect this; the user pays the agency directly.",
+            "properties": {
+              "amount": { "type": "number", "minimum": 0, "description": "Example/user-supplied amount. Verify current fee with the agency." },
+              "currency": { "type": "string", "default": "USD" },
+              "note": { "type": "string", "description": "e.g. 'no fee', 'varies with revenue', 'late penalty applies'." }
+            }
+          },
+          "trigger": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type"],
+            "description": "What this obligation drives in the monitor.",
+            "properties": {
+              "type": { "type": "string", "enum": ["reminder", "reinstatement-warning", "status-loss-warning"], "description": "reminder = nudge; reinstatement-warning = approaching a state where reinstatement would be needed; status-loss-warning = risk of losing good standing / exempt status." },
+              "missedConsequence": { "type": "string", "description": "Generic, published consequence of missing it (e.g. 'loss of good standing', 'forfeiture / right to transact suspended', 'automatic revocation of exempt status after repeated non-filing'). Educational; verify with the agency." },
+              "reinstatementPath": { "type": "string", "description": "Generic pointer to how reinstatement generally works if the obligation lapses (e.g. 'file delinquent reports + pay fees/penalties with the SOS/Comptroller'). Not advice." }
+            }
+          }
+        }
+      }
+    }
+  }
+}

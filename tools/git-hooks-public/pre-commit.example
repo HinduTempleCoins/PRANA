@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# pre-commit.example — PUBLIC-SAFE example pre-commit hook for PRANA.
+#
+# This is the *shareable* hook: it only runs checks that are safe to publish in
+# an open repo. Copy it into your local hooks dir to enable:
+#
+#   cp tools/git-hooks-public/pre-commit.example .git/hooks/pre-commit
+#   chmod +x .git/hooks/pre-commit
+#
+# (or point core.hooksPath at a dir containing it.)
+#
+# IMPORTANT: the REAL keyword-guard that blocks private brand/identity strings
+# and server credentials from being committed to this PUBLIC repo lives in the
+# gitignored tools/git-hooks/ directory and is NOT shipped here. This example is
+# the public floor — secret-scanning + the adapter consumer-matrix lint — that
+# anyone cloning the repo can use without access to the private guard.
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+fail=0
+
+# 1) Secret scan on the staged changes (only if gitleaks is installed).
+#    `gitleaks protect --staged` scans what's about to be committed and exits
+#    non-zero on a finding. Skipped with a note if gitleaks isn't on PATH so the
+#    hook degrades gracefully rather than blocking commits outright.
+if command -v gitleaks >/dev/null 2>&1; then
+  echo "pre-commit: gitleaks protect --staged"
+  if ! gitleaks protect --staged --redact --config "$ROOT/.gitleaks.toml" 2>/dev/null; then
+    echo "pre-commit: ✗ gitleaks found a potential secret in staged changes." >&2
+    fail=1
+  fi
+else
+  echo "pre-commit: (gitleaks not installed — skipping secret scan; install it for full protection)"
+fi
+
+# 2) Adapter consumer-matrix lint: every data adapter must have a consumer and
+#    vice versa. Cheap, deterministic, no network. Keeps the adapter graph honest.
+if [ -f "$ROOT/tools/adapters/check-consumer-matrix.mjs" ]; then
+  echo "pre-commit: node tools/adapters/check-consumer-matrix.mjs"
+  if ! node "$ROOT/tools/adapters/check-consumer-matrix.mjs"; then
+    echo "pre-commit: ✗ consumer-matrix lint failed." >&2
+    fail=1
+  fi
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo "pre-commit: blocked. Fix the issues above (or 'git commit --no-verify' to bypass intentionally)." >&2
+  exit 1
+fi
+
+echo "pre-commit: ✓ public checks passed."
+exit 0

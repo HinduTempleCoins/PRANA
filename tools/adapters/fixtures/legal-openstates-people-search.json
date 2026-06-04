@@ -1,0 +1,31 @@
+{
+  "results": [
+    {
+      "id": "ocd-person/1111-aaaa-2222-bbbb",
+      "name": "Jane Q. Public",
+      "party": "Democratic",
+      "jurisdiction": { "name": "Texas" },
+      "current_role": {
+        "title": "Representative",
+        "org_classification": "lower",
+        "district": "100"
+      },
+      "email": "jane.public@example.gov",
+      "openstates_url": "https://openstates.org/person/jane-q-public/"
+    },
+    {
+      "id": "ocd-person/3333-cccc-4444-dddd",
+      "name": "John R. Doe",
+      "party": "Republican",
+      "jurisdiction": { "name": "Texas" },
+      "current_role": {
+        "title": "Senator",
+        "org_classification": "upper",
+        "district": "5"
+      },
+      "email": null,
+      "openstates_url": "https://openstates.org/person/john-r-doe/"
+    }
+  ],
+  "pagination": { "page": 1, "per_page": 20, "max_page": 1, "total_items": 2 }
+}

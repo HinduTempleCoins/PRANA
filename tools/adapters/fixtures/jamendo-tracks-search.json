@@ -1,0 +1,39 @@
+{
+  "headers": {
+    "status": "success",
+    "code": 0,
+    "error_message": "",
+    "warnings": "",
+    "results_count": 2
+  },
+  "results": [
+    {
+      "id": "1886433",
+      "name": "Sunrise Over the Nile",
+      "duration": 213,
+      "artist_id": "338966",
+      "artist_name": "Komiku",
+      "artist_idstr": "Komiku",
+      "album_name": "Poupis Adventure",
+      "license_ccurl": "http://creativecommons.org/licenses/by/3.0/",
+      "audio": "https://prod-1.storage.jamendo.com/?trackid=1886433&format=mp31",
+      "audiodownload": "https://prod-1.storage.jamendo.com/download/track/1886433/mp32/",
+      "shareurl": "https://www.jamendo.com/track/1886433/sunrise-over-the-nile",
+      "image": "https://usercontent.jamendo.com/cover.jpg"
+    },
+    {
+      "id": "1290557",
+      "name": "Temple Drone",
+      "duration": 305,
+      "artist_id": "440871",
+      "artist_name": "Kosta T",
+      "artist_idstr": "KostaT",
+      "album_name": "Ambient Works",
+      "license_ccurl": "http://creativecommons.org/licenses/by-nc-sa/4.0/",
+      "audio": "https://prod-1.storage.jamendo.com/?trackid=1290557&format=mp31",
+      "audiodownload": "https://prod-1.storage.jamendo.com/download/track/1290557/mp32/",
+      "shareurl": "https://www.jamendo.com/track/1290557/temple-drone",
+      "image": "https://usercontent.jamendo.com/cover2.jpg"
+    }
+  ]
+}

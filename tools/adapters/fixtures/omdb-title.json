@@ -1,0 +1,20 @@
+{
+  "Title": "Inception",
+  "Year": "2010",
+  "Rated": "PG-13",
+  "Runtime": "148 min",
+  "Genre": "Action, Adventure, Sci-Fi",
+  "Plot": "A thief who steals corporate secrets through the use of dream-sharing technology...",
+  "Poster": "https://m.media-amazon.com/images/inception.jpg",
+  "Ratings": [
+    { "Source": "Internet Movie Database", "Value": "8.8/10" },
+    { "Source": "Rotten Tomatoes", "Value": "87%" },
+    { "Source": "Metacritic", "Value": "74/100" }
+  ],
+  "Metascore": "74",
+  "imdbRating": "8.8",
+  "imdbVotes": "2,500,000",
+  "imdbID": "tt1375666",
+  "Type": "movie",
+  "Response": "True"
+}

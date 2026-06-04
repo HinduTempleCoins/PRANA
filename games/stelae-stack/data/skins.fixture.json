@@ -1,0 +1,22 @@
+[
+  {
+    "itemId": 30000,
+    "name": "Temple Night",
+    "palette": { "well": "#070b16", "grid": "#152138", "glow": "#bff0ff" }
+  },
+  {
+    "itemId": 30001,
+    "name": "Sandstone",
+    "palette": { "well": "#161009", "grid": "#3a2c16", "glow": "#ffe6b0" }
+  },
+  {
+    "itemId": 30002,
+    "name": "Lapis Vault",
+    "palette": { "well": "#070d20", "grid": "#152a52", "glow": "#9fd0ff" }
+  },
+  {
+    "itemId": 30003,
+    "name": "Amethyst",
+    "palette": { "well": "#120a20", "grid": "#2c1a52", "glow": "#e6ccff" }
+  }
+]

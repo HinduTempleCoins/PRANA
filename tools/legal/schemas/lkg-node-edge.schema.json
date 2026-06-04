@@ -1,0 +1,222 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vankushfamily.com/schemas/prana/legal/lkg-node-edge.schema.json",
+  "title": "PRANA Legal Knowledge Graph — node & edge records",
+  "description": "Canonical JSON Schema for one node OR one edge in the Legal Knowledge Graph (LKG). The LKG is a property graph (Neo4j-style; see design/legal/graph-db-viz-spec.md): every legal authority is a NODE, every relationship between authorities is an EDGE. This schema is GENERIC and public — it defines abstract node types (Case, Statute, CourtRule, Maxim, Category) and abstract edge types (cites, follows, distinguishes, overrules, interprets, ...). The user-supplied case framework that SEEDS the Category nodes is private data and is described separately by tools/brain/state/design/legal/taxonomy-seed.schema.json (gitignored vault). Every node carries a license tag (licenseFamily) so the AA2-4 license-router can confirm it is PD-clean before display: case texts are public-domain, statutes/court-rules are government works, maxims come from PD sources (e.g. Bouvier's), and Category nodes are the user's own original selection+arrangement (Feist-protectable, user-original).",
+  "oneOf": [
+    { "$ref": "#/definitions/node" },
+    { "$ref": "#/definitions/edge" }
+  ],
+  "definitions": {
+    "nodeType": {
+      "type": "string",
+      "description": "Abstract node type. Case = a judicial opinion. Statute = a codified law / regulation section. CourtRule = a procedural / evidentiary / constitutional clause (FRCP/FRE/FRAP/constitution). Maxim = a legal maxim, axiom, or canon of construction (PD dictionary source). Category = a node in the user-supplied seed taxonomy (the protectable selection+arrangement layer).",
+      "enum": ["Case", "Statute", "CourtRule", "Maxim", "Category"]
+    },
+    "edgeType": {
+      "type": "string",
+      "description": "Abstract edge type. cites = neutral citation A→B. follows = A adopts/applies B as good law (positive treatment). distinguishes = A holds B inapplicable on the facts (neutral/limiting). overrules = A nullifies B as precedent (negative treatment; includes abrogates/supersedes as subtypes via `subtype`). interprets = A construes the meaning of B (typically Case→Statute/CourtRule/Maxim). applies_statute = Case→Statute application. falls_under = Case/Statute→Category membership (from the seed taxonomy). references = Case→Maxim invocation.",
+      "enum": [
+        "cites",
+        "follows",
+        "distinguishes",
+        "overrules",
+        "interprets",
+        "applies_statute",
+        "falls_under",
+        "references"
+      ]
+    },
+    "licenseFamily": {
+      "type": "string",
+      "description": "PD-clean license family (mirrors AA2-3 license-tag.schema.json). Court opinions and US government statutes/rules are public-domain (PD / gov). Maxims come from PD dictionaries. Category nodes are user-original (the founder's selection+arrangement). No node in the LKG is ever copyrighted-3p — the LKG holds only PD-clean authorities + the user's own ontology.",
+      "enum": ["PD", "gov", "user-original"]
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "type", "label", "licenseFamily"],
+      "properties": {
+        "kind": { "const": "node" },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable, deterministic node id. Convention: `<type>:<canonical-key>` — e.g. `case:cl-opinion-12345` (CourtListener opinion id), `statute:usc-18-875`, `courtrule:frcp-12b6`, `maxim:bouvier-de-minimis`, `category:<slug>`. The canonical-key is the dedupe key."
+        },
+        "type": { "$ref": "#/definitions/nodeType" },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable name. Case: short case name (e.g. 'Brandenburg v. Ohio'). Statute: '18 U.S.C. § 875(c)'. CourtRule: 'FRCP 12(b)(6)'. Maxim: the maxim text. Category: the taxonomy node title."
+        },
+        "licenseFamily": { "$ref": "#/definitions/licenseFamily" },
+        "source": {
+          "type": "string",
+          "description": "Provenance adapter / corpus the node was ingested from (courtlistener, caselaw-access-project, govinfo, usc-uslm, ecfr, bouvier, taxonomy-seed, ...). Mirrors the BB2 legal adapter ids."
+        },
+        "sourceUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Stable link back to the underlying authority. The LKG ALWAYS links to the actual opinion/statute — treatment edges are probabilistic and must never be presented without this link (see treatment-detection-spec.md)."
+        },
+        "case": {
+          "type": "object",
+          "description": "Present only when type=Case.",
+          "additionalProperties": true,
+          "properties": {
+            "citation": { "type": "string", "description": "Primary reporter citation, e.g. '395 U.S. 444'." },
+            "court": { "type": "string", "description": "Court id/name, e.g. 'scotus' / 'ca5'." },
+            "dateFiled": { "type": "string", "format": "date" },
+            "docketNumber": { "type": "string" },
+            "clusterId": { "type": "string", "description": "CourtListener cluster id grouping parallel opinions." },
+            "year": { "type": "integer", "minimum": 0, "maximum": 3000 }
+          }
+        },
+        "statute": {
+          "type": "object",
+          "description": "Present only when type=Statute.",
+          "additionalProperties": true,
+          "properties": {
+            "title": { "type": "string", "description": "e.g. '18' (USC title) or CFR title." },
+            "section": { "type": "string", "description": "e.g. '875' or '875(c)'." },
+            "corpus": { "type": "string", "enum": ["USC", "CFR", "state", "constitution"], "description": "Which body of law." },
+            "effectiveDate": { "type": "string", "format": "date" }
+          }
+        },
+        "courtRule": {
+          "type": "object",
+          "description": "Present only when type=CourtRule.",
+          "additionalProperties": true,
+          "properties": {
+            "ruleset": { "type": "string", "enum": ["FRCP", "FRE", "FRAP", "FRCrP", "FRBP", "constitution", "local"], "description": "Which rule corpus / clause family." },
+            "rule": { "type": "string", "description": "e.g. '12(b)(6)' or 'amend-1'." }
+          }
+        },
+        "maxim": {
+          "type": "object",
+          "description": "Present only when type=Maxim.",
+          "additionalProperties": true,
+          "properties": {
+            "latin": { "type": "string", "description": "Original Latin maxim where applicable." },
+            "gloss": { "type": "string", "description": "Plain-English meaning." },
+            "canonOf": { "type": "string", "enum": ["construction", "equity", "evidence", "general"], "description": "Which family of legal maxim/canon." },
+            "dictionarySource": { "type": "string", "description": "PD source, e.g. \"Bouvier's Law Dictionary (1856)\"." }
+          }
+        },
+        "category": {
+          "type": "object",
+          "description": "Present only when type=Category. These nodes are imported from the user's seed taxonomy (taxonomy-seed.schema.json). The category TITLES/STRUCTURE are user-original; only abstract structural fields appear here.",
+          "additionalProperties": true,
+          "properties": {
+            "parentId": { "type": "string", "description": "Parent Category node id, for the category hierarchy (root categories omit this)." },
+            "depth": { "type": "integer", "minimum": 0, "description": "Depth in the taxonomy tree (0 = root)." },
+            "seedKey": { "type": "string", "description": "Stable key from the taxonomy seed file used to dedupe on re-import." }
+          }
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Ingestion confidence that this node was parsed/identified correctly (1.0 for authoritative adapter records; lower for fuzzy-resolved entities)."
+        }
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "type", "from", "to"],
+      "properties": {
+        "kind": { "const": "edge" },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Stable edge id. Convention: `<type>:<from>->:<to>` so the same relationship dedupes (e.g. `overrules:case:cl-1->case:cl-2`)."
+        },
+        "type": { "$ref": "#/definitions/edgeType" },
+        "from": { "type": "string", "minLength": 1, "description": "Source node id (the citing / treating authority)." },
+        "to": { "type": "string", "minLength": 1, "description": "Target node id (the cited / treated authority)." },
+        "subtype": {
+          "type": "string",
+          "description": "Refines the edge type with the detected treatment word. For type=overrules this distinguishes overruled / abrogated / superseded-by-statute. For type=follows: followed / adopted / applied. For type=distinguishes: distinguished / limited / questioned / criticized.",
+          "enum": [
+            "overruled",
+            "abrogated",
+            "superseded-by-statute",
+            "followed",
+            "adopted",
+            "applied",
+            "distinguished",
+            "limited",
+            "questioned",
+            "criticized",
+            "neutral"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Treatment-classification confidence (see treatment-detection-spec.md). 1.0 ONLY for structural `cites` edges harvested directly from a citation graph (e.g. CourtListener). Treatment edges (follows/distinguishes/overrules/interprets) are NLP-derived and PROBABILISTIC — this field is mandatory in spirit for them and must always be surfaced to the user; a false 'good law' is dangerous."
+        },
+        "cue": {
+          "type": "object",
+          "description": "Evidence that produced an NLP-derived treatment edge. Absent on pure structural `cites` edges.",
+          "additionalProperties": false,
+          "properties": {
+            "phrase": { "type": "string", "description": "The matched cue phrase, e.g. 'we overrule' / 'decline to follow' / 'abrogated by'." },
+            "quote": { "type": "string", "description": "The surrounding sentence/snippet from the opinion (the verbatim evidence)." },
+            "offset": { "type": "integer", "minimum": 0, "description": "Character offset of the cue in the source opinion text." },
+            "polarity": { "type": "string", "enum": ["positive", "negative", "neutral"], "description": "Treatment polarity the cue implies." }
+          }
+        },
+        "sourceUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Link to the opinion paragraph that establishes this relationship. REQUIRED in practice for any treatment edge so the claim is always traceable to the real text."
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "kind": "node",
+      "id": "case:cl-opinion-105026",
+      "type": "Case",
+      "label": "Brandenburg v. Ohio",
+      "licenseFamily": "PD",
+      "source": "courtlistener",
+      "sourceUrl": "https://www.courtlistener.com/opinion/105026/brandenburg-v-ohio/",
+      "case": { "citation": "395 U.S. 444", "court": "scotus", "dateFiled": "1969-06-09", "year": 1969 },
+      "confidence": 1
+    },
+    {
+      "kind": "node",
+      "id": "statute:usc-18-875",
+      "type": "Statute",
+      "label": "18 U.S.C. § 875(c)",
+      "licenseFamily": "gov",
+      "source": "usc-uslm",
+      "statute": { "title": "18", "section": "875(c)", "corpus": "USC" }
+    },
+    {
+      "kind": "node",
+      "id": "category:coercion.harm-to-credit",
+      "type": "Category",
+      "label": "<user-original taxonomy node>",
+      "licenseFamily": "user-original",
+      "source": "taxonomy-seed",
+      "category": { "parentId": "category:coercion", "depth": 1, "seedKey": "coercion.harm-to-credit" }
+    },
+    {
+      "kind": "edge",
+      "id": "overrules:case:cl-1->case:cl-2",
+      "type": "overrules",
+      "from": "case:cl-1",
+      "to": "case:cl-2",
+      "subtype": "overruled",
+      "confidence": 0.93,
+      "cue": { "phrase": "we overrule", "quote": "For the reasons stated, we overrule Whitney v. California.", "offset": 18211, "polarity": "negative" },
+      "sourceUrl": "https://www.courtlistener.com/opinion/105026/brandenburg-v-ohio/"
+    }
+  ]
+}

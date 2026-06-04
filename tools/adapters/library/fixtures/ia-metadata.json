@@ -1,0 +1,29 @@
+{
+  "server": "ia801505.us.archive.org",
+  "dir": "/12/items/cu31924013345974",
+  "metadata": {
+    "identifier": "cu31924013345974",
+    "title": "On the origin of species by means of natural selection",
+    "creator": "Darwin, Charles",
+    "mediatype": "texts",
+    "licenseurl": "http://creativecommons.org/publicdomain/mark/1.0/",
+    "rights": "Public Domain",
+    "publicdate": "2009-08-12 18:42:11",
+    "year": "1859",
+    "language": "English"
+  },
+  "files": [
+    {
+      "name": "cu31924013345974.pdf",
+      "format": "Text PDF",
+      "size": "23456789",
+      "source": "derivative"
+    },
+    {
+      "name": "cu31924013345974_djvu.txt",
+      "format": "DjVuTXT",
+      "size": "1234567",
+      "source": "derivative"
+    }
+  ]
+}

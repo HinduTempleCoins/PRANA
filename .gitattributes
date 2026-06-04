@@ -1,0 +1,19 @@
+# Normalize line endings
+* text=auto eol=lf
+
+# Solidity & JS sources
+*.sol text diff=solidity
+*.js text
+*.mjs text
+*.json text
+*.md text
+*.sh text eol=lf
+*.yml text
+
+# Binaries
+*.png binary
+*.svg text
+*.ico binary
+
+# Keep genesis & ABI json diffable but mark generated ABIs
+contracts/abis/** linguist-generated=true

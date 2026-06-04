@@ -1,0 +1,27 @@
+{
+  "count": 2,
+  "next": "https://www.courtlistener.com/api/rest/v4/search/?q=first+amendment&type=o&page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 108713,
+      "type": "o",
+      "caseName": "Brandenburg v. Ohio",
+      "court": "scotus",
+      "dateFiled": "1969-06-09",
+      "citation": ["395 U.S. 444"],
+      "snippet": "the constitutional guarantees of free speech and free press do not permit a State to forbid...",
+      "absolute_url": "/opinion/108713/brandenburg-v-ohio/"
+    },
+    {
+      "id": 99999,
+      "type": "o",
+      "caseName": "Texas v. Johnson",
+      "court": "scotus",
+      "dateFiled": "1989-06-21",
+      "citation": ["491 U.S. 397"],
+      "snippet": "flag burning constitutes expressive conduct protected by the First Amendment...",
+      "absolute_url": "/opinion/99999/texas-v-johnson/"
+    }
+  ]
+}

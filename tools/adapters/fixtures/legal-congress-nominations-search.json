@@ -1,0 +1,15 @@
+{
+  "nominations": [
+    {
+      "congress": 118,
+      "number": 1234,
+      "citation": "PN1234",
+      "description": "A nomination in the United States Department of Justice.",
+      "receivedDate": "2023-06-15",
+      "organization": "Department of Justice",
+      "latestAction": { "actionDate": "2023-09-20", "text": "Confirmed by the Senate by Voice Vote." },
+      "url": "https://api.congress.gov/v3/nomination/118/1234?format=json"
+    }
+  ],
+  "pagination": { "count": 1, "next": null, "prev": null }
+}

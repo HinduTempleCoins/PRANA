@@ -1,0 +1,23 @@
+{
+  "count": 1,
+  "next": "https://www.courtlistener.com/api/rest/v4/docket-entries/?docket=65663226&page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 220104001,
+      "docket": 65663226,
+      "entry_number": 1,
+      "date_filed": "2023-05-30",
+      "description": "COMPLAINT against Example Corp. Filing fee $402.",
+      "recap_documents": [
+        {
+          "id": 350110001,
+          "document_number": "1",
+          "is_available": true,
+          "filepath_local": "recap/gov.uscourts.nysd.604567/gov.uscourts.nysd.604567.1.0.pdf",
+          "page_count": 42
+        }
+      ]
+    }
+  ]
+}

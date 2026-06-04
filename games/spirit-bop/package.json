@@ -1,0 +1,27 @@
+{
+  "name": "prana-spirit-bop",
+  "version": "0.1.0",
+  "description": "Spirit Bop — a PRANA whack-a-mole reflex arcade game (Phaser, ES modules). Seeded accelerating spawns, shrinking hit windows, combo meter, don't-bop-the-lantern penalty, skin-slot cosmetics, EIP-712 score vouchers, and dual clean/crypto builds.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:crypto": "vite build --mode crypto",
+    "build:clean": "vite build --mode clean",
+    "preview": "vite preview",
+    "test": "node --test"
+  },
+  "keywords": [
+    "prana",
+    "phaser",
+    "whack-a-mole",
+    "spirit-bop",
+    "arcade",
+    "game"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "phaser": "^4.1.0",
+    "vite": "^8.0.16"
+  }
+}

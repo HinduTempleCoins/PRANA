@@ -1,0 +1,11 @@
+{
+  "member": {
+    "bioguideId": "C001098",
+    "directOrderName": "Ted Cruz",
+    "partyName": "Republican",
+    "state": "Texas",
+    "district": null,
+    "terms": { "item": [{ "chamber": "Senate", "startYear": 2013 }] },
+    "url": "https://api.congress.gov/v3/member/C001098?format=json"
+  }
+}

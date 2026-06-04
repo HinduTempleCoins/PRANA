@@ -1,0 +1,10 @@
+{
+  "name": "prana-adapters",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "PRANA data adapters: shared base layer plus RPC and external-API clients consumed by the wallet/aggregator.",
+  "scripts": {
+    "test": "node --test"
+  }
+}

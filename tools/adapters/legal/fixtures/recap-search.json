@@ -1,0 +1,15 @@
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "docket_id": 65663226,
+      "caseName": "In re Example Securities Litigation",
+      "court": "nysd",
+      "docketNumber": "1:23-cv-04567",
+      "dateFiled": "2023-05-30",
+      "absolute_url": "/docket/65663226/in-re-example-securities-litigation/"
+    }
+  ]
+}

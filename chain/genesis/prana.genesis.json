@@ -1,0 +1,29 @@
+{
+  "config": {
+    "chainId": 108369,
+    "homesteadBlock": 0,
+    "eip150Block": 0,
+    "eip155Block": 0,
+    "eip158Block": 0,
+    "byzantiumBlock": 0,
+    "constantinopleBlock": 0,
+    "petersburgBlock": 0,
+    "istanbulBlock": 0,
+    "berlinBlock": 0,
+    "londonBlock": 0,
+    "ethash": {}
+  },
+  "nonce": "0x0000000000000042",
+  "timestamp": "0x0",
+  "extraData": "0x5052414e41202d2056616e204b757368204661696d696c79205265736561726368",
+  "gasLimit": "0x1c9c380",
+  "difficulty": "0x80000",
+  "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "coinbase": "0x0000000000000000000000000000000000000000",
+  "alloc": {
+    "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266": {
+      "balance": "0x21e19e0c9bab2400000",
+      "_comment": "DEV ONLY pre-funded account (~10000 PRANA). This is the well-known public Hardhat/Anvil account #0. Private key: 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 -- import into MetaMask for local testing. NEVER use this key on any real/public network; the key is publicly known."
+    }
+  }
+}

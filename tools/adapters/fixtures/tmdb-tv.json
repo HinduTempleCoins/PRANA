@@ -1,0 +1,18 @@
+{
+  "id": 1396,
+  "name": "Breaking Bad",
+  "original_name": "Breaking Bad",
+  "overview": "A high school chemistry teacher diagnosed with cancer turns to making meth...",
+  "first_air_date": "2008-01-20",
+  "last_air_date": "2013-09-29",
+  "number_of_seasons": 5,
+  "number_of_episodes": 62,
+  "genres": [
+    { "id": 18, "name": "Drama" },
+    { "id": 80, "name": "Crime" }
+  ],
+  "poster_path": "/ggFHVNu6YYI5L9pCfOacjizRGt.jpg",
+  "backdrop_path": "/tsRy63Mu5cu8etL1X7ZLyf7UP1M.jpg",
+  "vote_average": 8.9,
+  "status": "Ended"
+}

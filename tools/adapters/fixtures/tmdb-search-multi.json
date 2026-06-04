@@ -1,0 +1,30 @@
+{
+  "page": 1,
+  "total_pages": 12,
+  "total_results": 231,
+  "results": [
+    {
+      "id": 27205,
+      "media_type": "movie",
+      "title": "Inception",
+      "original_title": "Inception",
+      "overview": "Cobb, a skilled thief who commits corporate espionage...",
+      "release_date": "2010-07-15",
+      "poster_path": "/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg",
+      "backdrop_path": "/s3TBrRGB1iav7gFOCNx3H31MoES.jpg",
+      "vote_average": 8.4,
+      "popularity": 85.3
+    },
+    {
+      "id": 1396,
+      "media_type": "tv",
+      "name": "Breaking Bad",
+      "original_name": "Breaking Bad",
+      "overview": "A high school chemistry teacher turned methamphetamine producer...",
+      "first_air_date": "2008-01-20",
+      "poster_path": "/ggFHVNu6YYI5L9pCfOacjizRGt.jpg",
+      "vote_average": 8.9,
+      "popularity": 210.1
+    }
+  ]
+}

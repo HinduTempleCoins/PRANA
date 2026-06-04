@@ -1,0 +1,13 @@
+{
+  "packageId": "BILLS-118hr3016ih",
+  "collectionCode": "BILLS",
+  "title": "To amend title 31, United States Code, to provide for transparency.",
+  "category": "Bills and Statutes",
+  "dateIssued": "2024-01-09",
+  "congress": "118",
+  "branch": "legislative",
+  "download": {
+    "xmlLink": "https://api.govinfo.gov/packages/BILLS-118hr3016ih/xml",
+    "pdfLink": "https://api.govinfo.gov/packages/BILLS-118hr3016ih/pdf"
+  }
+}

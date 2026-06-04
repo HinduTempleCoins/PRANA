@@ -1,0 +1,12 @@
+[
+  {
+    "title": "Breaking Bad",
+    "year": 2008,
+    "ids": { "trakt": 1, "slug": "breaking-bad", "imdb": "tt0903747", "tmdb": 1396 }
+  },
+  {
+    "title": "Game of Thrones",
+    "year": 2011,
+    "ids": { "trakt": 1390, "slug": "game-of-thrones", "imdb": "tt0944947", "tmdb": 1399 }
+  }
+]

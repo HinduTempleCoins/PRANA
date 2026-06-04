@@ -1,0 +1,16 @@
+{
+  "name": "@prana/pool-coordinator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "PRANA pool coordinator skeleton (SS2 / backlog XX18 + PR8 multi-coin). The open-source 'front end' anyone can run that collects verified shares from workers, batches them per epoch, and settles them into the ONE on-chain UnifiedSharesLedger (the Hive/BLURT-front-end + P2Pool model: many coordinators, one ledger). SKELETON — real stratum + on-chain send are stubbed; share collection, validation, dedup, epoch batching and the settle-tx shape are real and unit-testable.",
+  "scripts": {
+    "start": "node src/index.mjs",
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "author": "Van Kush Family Research Institute (VKFRI)",
+  "license": "MIT"
+}

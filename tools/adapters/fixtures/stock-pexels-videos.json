@@ -1,0 +1,16 @@
+{
+  "page": 1,
+  "videos": [
+    {
+      "id": 3576378,
+      "width": 1920,
+      "height": 1080,
+      "url": "https://www.pexels.com/video/waves-3576378/",
+      "image": "https://images.pexels.com/videos/3576378/free-video-3576378.jpg",
+      "user": { "id": 1437723, "name": "Enrique Hoyos" },
+      "video_files": [
+        { "id": 123456, "quality": "hd", "link": "https://player.vimeo.com/external/3576378.hd.mp4" }
+      ]
+    }
+  ]
+}

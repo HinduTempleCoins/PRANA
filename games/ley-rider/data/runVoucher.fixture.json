@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "stub": true,
+  "voucher": {
+    "player": "0x0000000000000000000000000000000000000000",
+    "gameId": "ley-rider",
+    "score": 0,
+    "runRef": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "nonce": 0,
+    "deadline": 0,
+    "signature": "0x"
+  },
+  "note": "Fixture stub returned when no attester endpoint is configured, when offline, or on any post failure. The real attester returns an EIP-712 voucher redeemable at ArcadeFaucet/ArcadeLeaderboard."
+}

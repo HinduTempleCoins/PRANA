@@ -1,0 +1,71 @@
+name: security
+
+# Supply-chain + secrets scanning for the PRANA repo. Public-safe: read-only,
+# no deploys, no secrets emitted. Two jobs:
+#   - gitleaks  : scans tracked content + full git history for leaked secrets.
+#   - osv-scan  : scans the committed lockfiles for known-vulnerable deps.
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+# Least-privilege: jobs only read code; gitleaks/osv upload nothing requiring write.
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: gitleaks (secrets in history)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history so gitleaks can scan every commit, not just the tip.
+          fetch-depth: 0
+      - name: Gitleaks scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          # Uses the in-repo .gitleaks.toml allowlist (known-public dev key).
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  osv-scan:
+    name: osv-scanner (vulnerable deps)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Scans the committed lockfile. Only contracts/package-lock.json is
+      # tracked in this public repo; gitignored sibling product dirs never reach
+      # CI, so their lockfiles must NOT be referenced here.
+      - name: OSV-Scanner
+        uses: google/osv-scanner-action/osv-scanner-action@v2.0.2
+        with:
+          scan-args: |-
+            --lockfile=contracts/package-lock.json
+
+  slither:
+    name: slither (static analysis)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install contract deps
+        working-directory: contracts
+        run: npm ci
+      # Static analysis of the Solidity. fail-on: high gates the build on any HIGH finding.
+      #
+      # BASELINE (triaged 2026-06-04, see tools/brain private security/slither-report.md):
+      # the current tree reports 26 HIGH, ALL triaged as false-positive / accepted-risk /
+      # library (signed-permit pulls, pull-payments, ERC-4337 + Multicall by-design,
+      # nonReentrant-guarded reentrancy, OZ/vendored-amm). Until those are filtered, this
+      # job is expected to surface them; a NEW untriaged HIGH should be treated as a
+      # regression. mocks/ and vendored amm/ are excluded from the analysis target.
+      - name: Slither
+        uses: crytic/slither-action@v0.4.0
+        with:
+          target: contracts/
+          slither-version: 0.11.5
+          solc-version: 0.8.24
+          fail-on: high
+          slither-args: --compile-force-framework hardhat --filter-paths "contracts/mocks|contracts/amm|node_modules"

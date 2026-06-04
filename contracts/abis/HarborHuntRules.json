@@ -1,0 +1,255 @@
+[
+  {
+    "inputs": [],
+    "name": "BadConfig",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "BadFleet",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "BadPlayerCount",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "BadStateLength",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "CellAlreadyShot",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "CellOutOfRange",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "GameOver",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "LengthMismatch",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "MissingAnswer",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotYourTurn",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "RootAlreadySet",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "UnexpectedAnswer",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "WrongPhase",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroRoot",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "state",
+        "type": "bytes"
+      },
+      {
+        "internalType": "uint8",
+        "name": "playerIndex",
+        "type": "uint8"
+      },
+      {
+        "internalType": "bytes",
+        "name": "move",
+        "type": "bytes"
+      }
+    ],
+    "name": "applyMove",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "newState",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "root",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bool[]",
+        "name": "isShip",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bytes32[]",
+        "name": "salts",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "challengeFleet",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "ok",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bool[]",
+        "name": "isShip",
+        "type": "bool[]"
+      },
+      {
+        "internalType": "bytes32[]",
+        "name": "salts",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "computeRoot",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "gameName",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "",
+        "type": "bytes"
+      },
+      {
+        "internalType": "uint8",
+        "name": "numPlayers",
+        "type": "uint8"
+      }
+    ],
+    "name": "initialState",
+    "outputs": [
+      {
+        "internalType": "bytes",
+        "name": "state",
+        "type": "bytes"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxPlayers",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minPlayers",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "state",
+        "type": "bytes"
+      }
+    ],
+    "name": "simultaneous",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "state",
+        "type": "bytes"
+      }
+    ],
+    "name": "status",
+    "outputs": [
+      {
+        "internalType": "uint8",
+        "name": "s",
+        "type": "uint8"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  }
+]

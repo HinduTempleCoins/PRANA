@@ -1,0 +1,16 @@
+{
+  "id": 435800,
+  "name": "William Marbury v. James Madison, Secretary of State of the United States",
+  "name_abbreviation": "Marbury v. Madison",
+  "decision_date": "1803-02-24",
+  "docket_number": "",
+  "citations": [{ "cite": "5 U.S. 137", "type": "official" }],
+  "court": { "id": 9009, "name": "Supreme Court of the United States" },
+  "jurisdiction": { "id": 39, "name": "United States", "slug": "us" },
+  "casebody": {
+    "data": {
+      "text": "At the last term ... it is emphatically the province and duty of the judicial department to say what the law is."
+    }
+  },
+  "frontend_url": "https://cite.case.law/us/5/137/"
+}

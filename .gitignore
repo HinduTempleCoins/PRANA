@@ -1,0 +1,35 @@
+# Forked client source — heavy; rebuilt/re-cloned via chain/scripts/build.sh.
+# TODO: convert to a proper git submodule pointing at our own PRANA fork of core-geth.
+/chain/core-geth/
+
+# Node data (chain db, keystore, ipc)
+/chain/data/
+
+# Build artifacts
+**/build/bin/
+*.log
+/tmp/
+
+# Dev secrets that must never be committed
+*.key
+keystore/
+
+# brain: raw transcript safety-net copies (curated state/ stays tracked)
+/tools/brain/transcripts/
+
+# brain: server details + verbatim transcript stay LOCAL-ONLY (repo is public)
+/tools/brain/state/
+/tools/brain/DEPLOY.md
+
+# proprietary project memory — local + private-server only, NEVER the public repo
+/CLAUDE.md
+
+# the pre-commit guard contains secret/brand keywords as detection patterns (would trip itself)
+/tools/git-hooks/
+
+# Akasha wallet front-end — private product, local-only until published
+/akasha/node_modules/
+/akasha/
+
+# adapters reuse contracts/node_modules via a local symlink — never commit it
+/tools/adapters/node_modules

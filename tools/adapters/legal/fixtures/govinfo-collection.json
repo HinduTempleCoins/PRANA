@@ -1,0 +1,23 @@
+{
+  "count": 2,
+  "offsetMark": "AoJwsdjQ8K4DPzBCSUxTLTExN2hyMzAxNg==",
+  "nextPage": "https://api.govinfo.gov/collections/BILLS/2024-01-01T00:00:00Z/2024-01-31T00:00:00Z?offsetMark=...&pageSize=2",
+  "packages": [
+    {
+      "packageId": "BILLS-118hr3016ih",
+      "title": "To amend title 31, United States Code, to provide for transparency.",
+      "docClass": "hr",
+      "dateIssued": "2024-01-09",
+      "lastModified": "2024-01-10T05:11:00Z",
+      "packageLink": "https://api.govinfo.gov/packages/BILLS-118hr3016ih/summary"
+    },
+    {
+      "packageId": "BILLS-118s2150is",
+      "title": "A bill to support open government data.",
+      "docClass": "s",
+      "dateIssued": "2024-01-11",
+      "lastModified": "2024-01-12T05:11:00Z",
+      "packageLink": "https://api.govinfo.gov/packages/BILLS-118s2150is/summary"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PRANA Ley Rider</title>
+    <style>
+      html, body {
+        margin: 0;
+        background: #070b16;
+        color: #cfe0ff;
+        font-family: system-ui, sans-serif;
+        height: 100%;
+      }
+      #app {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 0;
+      }
+      h1 { font-size: 18px; margin: 4px 0; letter-spacing: 3px; }
+      #game { box-shadow: 0 0 30px #14224a; border-radius: 4px; }
+      #hint { font-size: 12px; opacity: 0.6; max-width: 900px; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>PRANA LEY RIDER</h1>
+      <div id="game"></div>
+      <div id="hint">
+        Draw lines with drag &middot; [B] boost line &middot; [E] eraser &middot;
+        [S] place start &middot; [F] place finish &middot; space/right-drag to pan &middot;
+        [Enter] ride / stop
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

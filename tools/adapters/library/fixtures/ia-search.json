@@ -1,0 +1,25 @@
+{
+  "responseHeader": { "status": 0, "QTime": 12 },
+  "response": {
+    "numFound": 2,
+    "start": 0,
+    "docs": [
+      {
+        "identifier": "cu31924013345974",
+        "title": "On the origin of species by means of natural selection",
+        "creator": "Darwin, Charles",
+        "year": "1859",
+        "mediatype": "texts",
+        "licenseurl": "http://creativecommons.org/publicdomain/mark/1.0/"
+      },
+      {
+        "identifier": "descentofmanselec00darw",
+        "title": "The descent of man, and selection in relation to sex",
+        "creator": "Darwin, Charles",
+        "year": "1871",
+        "mediatype": "texts",
+        "licenseurl": "http://creativecommons.org/publicdomain/mark/1.0/"
+      }
+    ]
+  }
+}

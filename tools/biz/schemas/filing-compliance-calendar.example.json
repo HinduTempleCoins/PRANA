@@ -1,0 +1,49 @@
+{
+  "version": "1.0.0",
+  "jurisdiction": "US-TX",
+  "disclaimer": "General information only — NOT legal or tax advice. Reminders only; this never files or pays. Deadlines and fees change and vary; verify with the official agency. No founder PII.",
+  "obligations": [
+    {
+      "id": "tx-franchise-tax-pir",
+      "title": "Texas franchise tax + Public Information Report (PIR)",
+      "agency": "Texas Comptroller",
+      "category": "franchise-tax",
+      "appliesTo": ["llc", "corporation", "nonprofit-corporation"],
+      "cadence": { "frequency": "annual", "dueRule": "May 15 annually (verify current date)", "leadDays": 30 },
+      "fee": { "amount": 0, "currency": "USD", "note": "Many entities owe no tax below the no-tax-due threshold, but the report is still required. Verify current rules." },
+      "trigger": {
+        "type": "status-loss-warning",
+        "missedConsequence": "Failure to file/pay can lead to forfeiture of the right to transact business and loss of good standing.",
+        "reinstatementPath": "Generally: file delinquent reports and pay any tax/penalties with the Comptroller, then reinstate with the Secretary of State. Verify the current process."
+      }
+    },
+    {
+      "id": "irs-990-annual",
+      "title": "IRS Form 990 series annual return",
+      "agency": "IRS",
+      "category": "annual-return",
+      "appliesTo": ["exempt-org"],
+      "cadence": { "frequency": "annual", "dueRule": "15th day of the 5th month after the end of the accounting period (verify)", "leadDays": 45 },
+      "fee": { "amount": 0, "currency": "USD", "note": "No filing fee for the information return itself." },
+      "trigger": {
+        "type": "reinstatement-warning",
+        "missedConsequence": "Failure to file for three consecutive years results in automatic revocation of tax-exempt status.",
+        "reinstatementPath": "Generally requires reapplying for exemption and may involve back filings. Verify the current IRS process."
+      }
+    },
+    {
+      "id": "registered-agent-maintenance",
+      "title": "Maintain a registered agent",
+      "agency": "Texas Secretary of State",
+      "category": "registered-agent",
+      "appliesTo": ["any"],
+      "cadence": { "frequency": "once", "dueRule": "Ongoing — update promptly if the agent or address changes", "leadDays": 0 },
+      "fee": { "amount": 0, "currency": "USD", "note": "A change-of-agent filing may carry a fee. Verify." },
+      "trigger": {
+        "type": "status-loss-warning",
+        "missedConsequence": "Lacking a valid registered agent can jeopardize good standing.",
+        "reinstatementPath": "File the appropriate change/maintenance form with the SOS. Not advice."
+      }
+    }
+  ]
+}

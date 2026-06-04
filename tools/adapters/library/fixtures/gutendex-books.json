@@ -1,0 +1,45 @@
+{
+  "count": 2,
+  "next": "https://gutendex.com/books/?page=2&search=frankenstein",
+  "previous": null,
+  "results": [
+    {
+      "id": 84,
+      "title": "Frankenstein; Or, The Modern Prometheus",
+      "authors": [
+        { "name": "Shelley, Mary Wollstonecraft", "birth_year": 1797, "death_year": 1851 }
+      ],
+      "subjects": [
+        "Frankenstein's monster (Fictitious character) -- Fiction",
+        "Science fiction",
+        "Horror tales"
+      ],
+      "bookshelves": ["Gothic Fiction", "Movie Books"],
+      "languages": ["en"],
+      "copyright": false,
+      "media_type": "Text",
+      "formats": {
+        "text/html": "https://www.gutenberg.org/ebooks/84.html.images",
+        "application/epub+zip": "https://www.gutenberg.org/ebooks/84.epub3.images",
+        "text/plain; charset=us-ascii": "https://www.gutenberg.org/ebooks/84.txt.utf-8"
+      },
+      "download_count": 123456
+    },
+    {
+      "id": 41445,
+      "title": "Frankenstein (German edition)",
+      "authors": [
+        { "name": "Shelley, Mary Wollstonecraft", "birth_year": 1797, "death_year": 1851 }
+      ],
+      "subjects": ["Science fiction"],
+      "bookshelves": [],
+      "languages": ["de"],
+      "copyright": false,
+      "media_type": "Text",
+      "formats": {
+        "text/plain; charset=utf-8": "https://www.gutenberg.org/ebooks/41445.txt.utf-8"
+      },
+      "download_count": 789
+    }
+  ]
+}

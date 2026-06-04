@@ -1,0 +1,32 @@
+[
+  {
+    "tokenId": 0,
+    "name": "Spark Spire",
+    "rarity": "Common",
+    "stats": { "damage": 8, "range": 120, "fireRate": 1.4, "level": 1, "xp": 0 }
+  },
+  {
+    "tokenId": 1,
+    "name": "Twin Bolt",
+    "rarity": "Uncommon",
+    "stats": { "damage": 12, "range": 140, "fireRate": 1.8, "level": 1, "xp": 0 }
+  },
+  {
+    "tokenId": 2,
+    "name": "Pulse Cannon",
+    "rarity": "Rare",
+    "stats": { "damage": 22, "range": 160, "fireRate": 1.2, "level": 2, "xp": 40 }
+  },
+  {
+    "tokenId": 3,
+    "name": "Aether Lance",
+    "rarity": "Epic",
+    "stats": { "damage": 34, "range": 190, "fireRate": 2.2, "level": 3, "xp": 120 }
+  },
+  {
+    "tokenId": 4,
+    "name": "Prana Obelisk",
+    "rarity": "Legendary",
+    "stats": { "damage": 55, "range": 220, "fireRate": 2.6, "level": 5, "xp": 300 }
+  }
+]

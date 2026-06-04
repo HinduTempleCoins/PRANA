@@ -1,0 +1,28 @@
+{
+  "numFound": 2,
+  "start": 0,
+  "docs": [
+    {
+      "key": "/works/OL45804W",
+      "title": "Fantastic Mr Fox",
+      "author_name": ["Roald Dahl"],
+      "first_publish_year": 1970,
+      "edition_count": 124,
+      "isbn": ["0140328726", "9780140328721"],
+      "cover_i": 6498519,
+      "ia": ["fantasticmrfox0000dahl"],
+      "ebook_access": "borrowable"
+    },
+    {
+      "key": "/works/OL66554W",
+      "title": "Pride and Prejudice",
+      "author_name": ["Jane Austen"],
+      "first_publish_year": 1813,
+      "edition_count": 3920,
+      "isbn": ["1503290565", "9781503290563"],
+      "cover_i": 8479576,
+      "ia": ["prideprejudice00aust"],
+      "ebook_access": "public"
+    }
+  ]
+}

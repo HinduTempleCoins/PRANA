@@ -1,0 +1,32 @@
+[
+  {
+    "itemId": 30000,
+    "name": "Prana Spark",
+    "shape": "round",
+    "palette": { "body": "#7fd6ff", "accent": "#bff0ff", "glow": "#1a6fbf" }
+  },
+  {
+    "itemId": 30001,
+    "name": "River Ember",
+    "shape": "round",
+    "palette": { "body": "#ffd27f", "accent": "#fff2c8", "glow": "#bf6a1a" }
+  },
+  {
+    "itemId": 30002,
+    "name": "Void Reed",
+    "shape": "diamond",
+    "palette": { "body": "#b07fff", "accent": "#e6ccff", "glow": "#5a1abf" }
+  },
+  {
+    "itemId": 30003,
+    "name": "Solar Leaper",
+    "shape": "diamond",
+    "palette": { "body": "#ffe27f", "accent": "#fff7d6", "glow": "#bf9a1a" }
+  },
+  {
+    "itemId": 30004,
+    "name": "Verdant Hopper",
+    "shape": "round",
+    "palette": { "body": "#7fffb0", "accent": "#ccffe0", "glow": "#1abf6a" }
+  }
+]

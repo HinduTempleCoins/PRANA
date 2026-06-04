@@ -1,0 +1,29 @@
+{
+  "count": 2,
+  "total_pages": 1,
+  "next_page_url": null,
+  "results": [
+    {
+      "document_number": "2024-01234",
+      "title": "Endangered and Threatened Wildlife and Plants; Listing Determination",
+      "type": "Rule",
+      "abstract": "We, the U.S. Fish and Wildlife Service, list a species as endangered under the Act.",
+      "publication_date": "2024-01-22",
+      "agencies": [{ "name": "Fish and Wildlife Service" }, { "name": "Interior Department" }],
+      "html_url": "https://www.federalregister.gov/documents/2024/01/22/2024-01234/",
+      "pdf_url": "https://www.govinfo.gov/content/pkg/FR-2024-01-22/pdf/2024-01234.pdf",
+      "citation": "89 FR 3456"
+    },
+    {
+      "document_number": "2024-05678",
+      "title": "Proposed Rule on Data Privacy Standards",
+      "type": "Proposed Rule",
+      "abstract": "The Commission proposes new standards for the handling of consumer data.",
+      "publication_date": "2024-02-03",
+      "agencies": [{ "name": "Federal Trade Commission" }],
+      "html_url": "https://www.federalregister.gov/documents/2024/02/03/2024-05678/",
+      "pdf_url": "https://www.govinfo.gov/content/pkg/FR-2024-02-03/pdf/2024-05678.pdf",
+      "citation": "89 FR 7890"
+    }
+  ]
+}

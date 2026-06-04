@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vankushfamily.com/schemas/prana/biz/filing-intake.schema.json",
+  "title": "Filing template — field-schema envelope (per-jurisdiction template KB)",
+  "description": "Generic envelope every filing-template field-schema (FF2-5) conforms to. Describes the INPUTS a form needs so the Business Filing App (FF2-4) can drive its intake wizard. GENERAL INFORMATION ONLY — NOT legal or tax advice. Contains NO filled values and NO founder PII; it is a structure, not a completed form. Field VALUES are supplied by the user at intake time, validated against each field's type/required/enum, and the user makes every legal choice.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["formId", "title", "jurisdiction", "agency", "fields", "disclaimer"],
+  "properties": {
+    "formId": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Stable template id, e.g. 'ss4-ein', 'tx-llc-formation'."
+    },
+    "title": { "type": "string", "description": "Human-readable form name." },
+    "officialFormNumber": {
+      "type": "string",
+      "description": "The official form number if any (e.g. 'IRS SS-4', 'TX SOS Form 205'). Verify it is current."
+    },
+    "jurisdiction": {
+      "type": "string",
+      "description": "e.g. 'US-Federal', 'US-TX'. Generic; expandable state-by-state."
+    },
+    "agency": {
+      "type": "string",
+      "description": "The official agency the user files with (e.g. 'IRS', 'Texas Secretary of State'). The app generates-for-user-to-file; it does NOT submit."
+    },
+    "category": {
+      "type": "string",
+      "enum": ["ein", "formation", "exemption", "annual-return", "periodic-report", "franchise-tax", "registered-agent", "foreign-qualification", "reinstatement", "dba", "other"],
+      "description": "Generic category for routing + compliance-calendar derivation."
+    },
+    "fields": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Ordered input fields the intake wizard collects from the user.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "label", "type"],
+        "properties": {
+          "name": { "type": "string", "pattern": "^[a-zA-Z0-9_.-]+$", "description": "Machine name." },
+          "label": { "type": "string", "description": "User-facing label." },
+          "type": {
+            "type": "string",
+            "enum": ["string", "text", "boolean", "integer", "number", "date", "enum", "address", "ein", "phone", "email"],
+            "description": "Input type. NOTE: 'ein' here is a FORMAT for a value the user types; the app never generates or stores it as identity — see FF2-1/FF2-4 PII rules."
+          },
+          "required": { "type": "boolean", "default": false },
+          "enum": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "For type 'enum' — the neutral option list the USER chooses from. The app presents options, never recommends one."
+          },
+          "help": {
+            "type": "string",
+            "description": "General-information help text (what the field means / where the official instruction lives). NOT advice on the user's situation."
+          },
+          "sensitive": {
+            "type": "boolean",
+            "default": false,
+            "description": "If true, the value is PII the user supplies transiently for the document and is NOT retained beyond producing the user-owned document."
+          }
+        }
+      }
+    },
+    "disclaimer": {
+      "type": "string",
+      "description": "The standard self-help-document-service disclaimer (FF2-4 §6)."
+    }
+  }
+}

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PRANA Temple Volley</title>
+    <style>
+      html, body {
+        margin: 0;
+        background: #05080f;
+        color: #cfe0ff;
+        font-family: system-ui, sans-serif;
+        height: 100%;
+        touch-action: none;
+      }
+      #app {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 0;
+      }
+      h1 { font-size: 18px; margin: 4px 0; letter-spacing: 4px; }
+      #game { box-shadow: 0 0 40px #0a1a44; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <h1>PRANA · TEMPLE VOLLEY</h1>
+      <div id="game"></div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

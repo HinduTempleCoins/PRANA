@@ -1,0 +1,43 @@
+{
+  "version": "1.0.0",
+  "title": "Generic U.S. business-credit pathway FSM (example instance)",
+  "disclaimerRequired": true,
+  "initialState": "not-started",
+  "states": [
+    { "id": "not-started", "label": "Not started", "kbRef": "credit-pathway-kb.md#the-core-principle-separation", "kind": "start", "summary": "No registered business entity yet." },
+    { "id": "entity-good-standing", "label": "Entity in good standing", "kbRef": "credit-pathway-kb.md#step-0-entity-good-standing-the-gate-for-everything", "kind": "step", "cost": "varies", "officialSource": "Secretary of State", "summary": "State-registered legal entity, kept in good standing." },
+    { "id": "ein", "label": "EIN obtained", "kbRef": "credit-pathway-kb.md#step-1-ein-free-from-the-irs", "kind": "step", "cost": "free", "officialSource": "IRS", "summary": "Free federal Employer Identification Number." },
+    { "id": "business-bank-account", "label": "Business bank account", "kbRef": "credit-pathway-kb.md#step-2-business-bank-account", "kind": "step", "cost": "varies", "officialSource": "the bank directly", "summary": "Dedicated account in the business name using the EIN." },
+    { "id": "business-presence", "label": "Business address + phone", "kbRef": "credit-pathway-kb.md#step-3-business-presence-address-listed-phone", "kind": "step", "cost": "varies", "officialSource": "the business's own records", "summary": "Consistent street address + listed phone (NAP)." },
+    { "id": "duns", "label": "D-U-N-S number", "kbRef": "credit-pathway-kb.md#step-4-duns-free-d-u-n-s-number", "kind": "step", "cost": "free", "officialSource": "Dun & Bradstreet", "summary": "Free D-U-N-S identifier opening the D&B file." },
+    { "id": "net30-tradelines", "label": "Net-30 tradelines", "kbRef": "credit-pathway-kb.md#step-5-net30-tradelines-starter-vendor-accounts", "kind": "step", "cost": "varies", "officialSource": "each vendor directly", "summary": "Real reporting Net-30 vendor accounts." },
+    { "id": "payment-history", "label": "3-6mo on-time history", "kbRef": "credit-pathway-kb.md#step-6-payment-history-3-6-months-on-time", "kind": "step", "cost": "free", "officialSource": "the business bureaus + each vendor", "summary": "Consistent on-time/early payments, 3-6 months." },
+    { "id": "revolving-credit", "label": "Revolving business credit", "kbRef": "credit-pathway-kb.md#step-7-revolving-credit-store-business-cards", "kind": "step", "cost": "varies", "officialSource": "each issuer directly", "summary": "Store cards then general business credit cards." },
+    { "id": "maintain", "label": "Maintain", "kbRef": "credit-pathway-kb.md#ongoing-maintain", "kind": "ongoing", "cost": "varies", "officialSource": "Secretary of State + the business bureaus", "summary": "Keep good standing + on-time payments + monitor files." }
+  ],
+  "transitions": [
+    { "from": "not-started", "to": "entity-good-standing", "milestone": "entity-registered" },
+    { "from": "entity-good-standing", "to": "ein", "milestone": "ein-obtained", "requires": ["entity-good-standing"] },
+    { "from": "ein", "to": "business-bank-account", "milestone": "business-bank-opened", "requires": ["entity-good-standing", "ein"] },
+    { "from": "business-bank-account", "to": "business-presence", "milestone": "presence-established", "requires": ["entity-good-standing"] },
+    { "from": "business-presence", "to": "duns", "milestone": "duns-issued", "requires": ["entity-good-standing", "business-presence"] },
+    { "from": "duns", "to": "net30-tradelines", "milestone": "tradelines-opened", "requires": ["ein", "business-bank-account", "duns"] },
+    { "from": "net30-tradelines", "to": "payment-history", "milestone": "tradelines-in-use", "requires": ["net30-tradelines"] },
+    { "from": "payment-history", "to": "revolving-credit", "milestone": "history-3-6-months-clean", "requires": ["payment-history"] },
+    { "from": "revolving-credit", "to": "maintain", "milestone": "revolving-established", "requires": ["revolving-credit"] },
+    { "from": "maintain", "to": "maintain", "milestone": "periodic-maintenance", "requires": ["maintain"] }
+  ],
+  "prohibited": [
+    { "id": "cpn", "match": ["cpn", "credit privacy number", "ein no ssn", "ein instead of ssn"], "refusal": "I can't help with that — CPNs / using an EIN as an SSN substitute are associated with fraud. The legitimate path is real tradelines you actually use and pay on time.", "redirectTo": "net30-tradelines" },
+    { "id": "synthetic-identity", "match": ["synthetic identity", "fake identity", "fabricated id"], "refusal": "I can't help with that — synthetic identities are fraud. Build a real business credit file under your real entity and EIN.", "redirectTo": "entity-good-standing" },
+    { "id": "seasoned-tradelines", "match": ["seasoned tradeline", "rented tradeline", "buy tradeline", "authorized user for hire"], "refusal": "I can't help with renting or buying tradelines — that fabricates history. Open real Net-30 vendor accounts and pay them on time.", "redirectTo": "net30-tradelines" },
+    { "id": "boost-fast", "match": ["boost fast", "instant business credit", "no pg fast", "guaranteed approval"], "refusal": "There's no legitimate shortcut. Real on-time payment history over 3-6 months is the mechanism.", "redirectTo": "payment-history" }
+  ],
+  "runtimeState": {
+    "userRef": "u-7f3a9c2e",
+    "currentState": "duns",
+    "completed": ["entity-good-standing", "ein", "business-bank-account", "business-presence"],
+    "startedAt": "2026-06-01T00:00:00Z",
+    "lastUpdated": "2026-06-04T00:00:00Z"
+  }
+}

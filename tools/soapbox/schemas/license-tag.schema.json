@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://prana.local/schemas/license-tag.schema.json",
+  "title": "LicenseTag",
+  "description": "Per-asset license metadata for SoapBox content-posture governance (AA2-3). Every ingested media/document asset carries one of these tags; the license-router (tools/soapbox/license-router.mjs, AA2-4) is a pure function from this tag to a serving posture (HOST | EMBED | AGGREGATE | REJECT). See design/soapbox/content-posture-spec.md and design/soapbox/melek-content-tiers.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["license", "licenseFamily", "source", "sourceLicensed"],
+  "properties": {
+    "license": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The specific license identifier as published by the source (e.g. 'CC-BY-4.0', 'CC0-1.0', 'PD-US-expired', 'US-Gov-Work', 'YouTube-Standard-License', 'All-Rights-Reserved', 'unknown'). Free-form to preserve provenance; licenseFamily is the normalized form the router reads."
+    },
+    "licenseFamily": {
+      "type": "string",
+      "enum": [
+        "PD",
+        "CC0",
+        "CC-BY",
+        "CC-BY-SA",
+        "CC-NC",
+        "gov",
+        "user-original",
+        "copyrighted-3p",
+        "unknown"
+      ],
+      "description": "Normalized license family the router branches on. PD/CC0/CC-BY/CC-BY-SA/gov/user-original are free-to-host (=> HOST). CC-NC is NonCommercial and NOT host-eligible for a commercial platform (=> AGGREGATE). copyrighted-3p routes by sourceLicensed (EMBED if the source is licensed, else REJECT). unknown is never hosted (=> AGGREGATE)."
+    },
+    "copyrightStatus": {
+      "type": "string",
+      "enum": ["public-domain", "open-licensed", "copyrighted", "unknown"],
+      "description": "Coarse copyright status, independent of the precise license. Advisory/audit field; the router decides from licenseFamily + sourceLicensed, not this. 'open-licensed' = under an open license (CC/etc.) but still copyrighted."
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Where the asset (or its official player) comes from: a host identifier or origin (e.g. 'wikimedia.org', 'youtube.com', 'archive.org', 'user-upload', a scraper host). For copyrighted-3p this is the embed/player host the router checks against the official-player whitelist."
+    },
+    "sourceLicensed": {
+      "type": "boolean",
+      "description": "THE decisive flag for copyrighted-3p assets: is the source we would put in front of the user itself licensed to deliver this content? true = an official licensed player (YouTube/Vimeo/Dailymotion/3Speak official embed) => EMBED. false = an unlicensed/scraper source => REJECT. For free-to-host families this is ignored by the router (we serve the bytes ourselves)."
+    },
+    "tier": {
+      "type": "string",
+      "enum": ["HOST", "EMBED", "AGGREGATE", "REJECT"],
+      "description": "OPTIONAL cached routing result. The license-router is the source of truth; this field, if present, should equal router(tag). Stored only to avoid recomputation, never trusted over the router."
+    },
+    "attribution": {
+      "type": "string",
+      "description": "Attribution string that MUST be displayed for CC-BY / CC-BY-SA (and any license requiring credit). Carried through to every HOST surface."
+    },
+    "flags": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["person", "brand", "model-release", "trademark"]
+      },
+      "default": [],
+      "description": "Independent rights signals that do NOT change the license posture but mark the asset for a separate right-of-publicity / trademark review before promotion on a HOST surface (a recognizable person, a brand/logo, a missing model release, a trademark)."
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Provenance chain for the transparency score: how this tag was derived (fetched-from URL, license field as reported, who/what asserted it, timestamps). Free-form; carried for audit.",
+      "properties": {
+        "fetchedFrom": { "type": "string", "description": "Canonical URL the asset/metadata was fetched from." },
+        "assertedBy": { "type": "string", "description": "Adapter / ingestor / user that asserted this license." },
+        "assertedAt": { "type": "string", "format": "date-time", "description": "When the assertion was made." }
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confidence (0..1) that licenseFamily/sourceLicensed are correct. Low-confidence copyrighted/unknown assets should be treated conservatively (AGGREGATE/REJECT) by downstream policy."
+    }
+  }
+}

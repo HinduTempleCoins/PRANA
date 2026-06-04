@@ -1,0 +1,10 @@
+{
+  "name": "prana-exporter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Read-only PRANA chain exporters: emit the aggregator data-contract JSON (Chains/swap/vote/pool/transparency) from the local RPC.",
+  "scripts": {
+    "test": "node --test"
+  }
+}

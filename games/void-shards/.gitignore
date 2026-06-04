@@ -1,0 +1,6 @@
+node_modules/
+dist-clean/
+dist-crypto/
+dist/
+.vite/
+*.log

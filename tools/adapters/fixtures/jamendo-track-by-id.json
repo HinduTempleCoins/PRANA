@@ -1,0 +1,25 @@
+{
+  "headers": {
+    "status": "success",
+    "code": 0,
+    "error_message": "",
+    "warnings": "",
+    "results_count": 1
+  },
+  "results": [
+    {
+      "id": "1886433",
+      "name": "Sunrise Over the Nile",
+      "duration": 213,
+      "artist_id": "338966",
+      "artist_name": "Komiku",
+      "artist_idstr": "Komiku",
+      "album_name": "Poupis Adventure",
+      "license_ccurl": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "audio": "https://prod-1.storage.jamendo.com/?trackid=1886433&format=mp31",
+      "audiodownload": "https://prod-1.storage.jamendo.com/download/track/1886433/mp32/",
+      "shareurl": "https://www.jamendo.com/track/1886433/sunrise-over-the-nile",
+      "image": "https://usercontent.jamendo.com/cover.jpg"
+    }
+  ]
+}

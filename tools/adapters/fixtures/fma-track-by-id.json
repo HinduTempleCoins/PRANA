@@ -1,0 +1,20 @@
+{
+  "title": "Free Music Archive - Track",
+  "aTracks": [
+    {
+      "track_id": "20901",
+      "track_title": "Enthusiast",
+      "track_url": "https://freemusicarchive.org/music/Tours/Enthusiast",
+      "track_file_url": "https://files.freemusicarchive.org/storage/Tours/Enthusiast.mp3",
+      "track_image_file": "https://freemusicarchive.org/img/Tours.jpg",
+      "track_duration": "03:54",
+      "artist_id": "8623",
+      "artist_name": "Tours",
+      "artist_url": "https://freemusicarchive.org/music/Tours",
+      "album_title": "Enthusiast",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "license_title": "CC0 1.0 Universal",
+      "track_genres": [{ "genre_title": "Electronic" }]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "status": "success",
+  "data": [
+    {
+      "chain": "Ethereum",
+      "project": "aave-v3",
+      "symbol": "USDC",
+      "tvlUsd": 845000000,
+      "apyBase": 3.21,
+      "apyReward": 0.45,
+      "apy": 3.66,
+      "pool": "aa11bb22-cc33-dd44-ee55-ff6677889900",
+      "stablecoin": true
+    },
+    {
+      "chain": "Arbitrum",
+      "project": "uniswap-v3",
+      "symbol": "WETH-USDC",
+      "tvlUsd": 132000000,
+      "apyBase": 12.5,
+      "apyReward": null,
+      "apy": 12.5,
+      "pool": "1122aabb-3344-5566-7788-99aabbccddee",
+      "stablecoin": false
+    }
+  ]
+}

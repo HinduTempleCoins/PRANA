@@ -1,0 +1,20 @@
+{
+  "formId": "form-1023",
+  "title": "Application for Recognition of Exemption Under 501(c)(3)",
+  "officialFormNumber": "IRS 1023 / 1023-EZ",
+  "jurisdiction": "US-Federal",
+  "agency": "IRS",
+  "category": "exemption",
+  "disclaimer": "Self-help document service — NOT legal or tax advice. Eligibility for 1023-EZ vs full 1023, and the substance of the application, depend on the organization's facts; verify with the IRS and consult a licensed professional. You file with the IRS yourself.",
+  "fields": [
+    { "name": "organization_name", "label": "Organization legal name", "type": "string", "required": true, "help": "Exact legal name of the nonprofit corporation." },
+    { "name": "ein", "label": "EIN", "type": "ein", "required": true, "sensitive": true, "help": "The organization must have an EIN before applying. Supplied transiently." },
+    { "name": "formation_date", "label": "Date of formation", "type": "date", "required": true, "help": "Date the organizing document was filed with the state." },
+    { "name": "formation_state", "label": "State of formation", "type": "string", "required": true, "help": "State where the nonprofit corporation was formed." },
+    { "name": "variant", "label": "Application variant", "type": "enum", "required": true, "enum": ["1023", "1023-EZ"], "help": "Neutral list — the USER selects the variant they are eligible for. 1023-EZ has an eligibility worksheet in the IRS instructions. The tool does not decide eligibility for you." },
+    { "name": "exempt_purpose", "label": "Exempt purpose", "type": "enum", "required": true, "enum": ["charitable", "religious", "educational", "scientific", "literary", "testing-for-public-safety", "amateur-sports", "prevention-of-cruelty"], "help": "501(c)(3) exempt-purpose category that matches the organization's mission." },
+    { "name": "mission_narrative", "label": "Mission / activities narrative", "type": "text", "required": true, "help": "Description of past, present, and planned activities." },
+    { "name": "organizing_document_has_dissolution_clause", "label": "Organizing document includes required dissolution clause?", "type": "boolean", "required": true, "help": "501(c)(3) organizing documents generally must include purpose-limitation and dissolution clauses. See IRS instructions." },
+    { "name": "officers", "label": "Officers / directors / trustees", "type": "text", "required": true, "sensitive": true, "help": "Names and roles of the governing body." }
+  ]
+}

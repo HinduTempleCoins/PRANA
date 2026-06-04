@@ -1,0 +1,24 @@
+[
+  {
+    "id": "111",
+    "name": "Aave",
+    "slug": "aave",
+    "symbol": "AAVE",
+    "category": "Lending",
+    "chains": ["Ethereum", "Polygon", "Avalanche"],
+    "tvl": 12450000000.55,
+    "change_1d": 0.83,
+    "change_7d": -2.11
+  },
+  {
+    "id": "1",
+    "name": "Uniswap",
+    "slug": "uniswap",
+    "symbol": "UNI",
+    "category": "Dexes",
+    "chains": ["Ethereum", "Arbitrum", "Optimism", "Base"],
+    "tvl": 5230000000.0,
+    "change_1d": -0.42,
+    "change_7d": 1.9
+  }
+]

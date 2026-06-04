@@ -1,0 +1,34 @@
+[
+  {
+    "upload_id": "60187",
+    "upload_name": "Sunrise Remix",
+    "user_name": "snowflake",
+    "user_real_name": "Bjorn Karlsson",
+    "user_page_url": "https://ccmixter.org/people/snowflake",
+    "file_page_url": "https://ccmixter.org/files/snowflake/60187",
+    "license_url": "http://creativecommons.org/licenses/by/3.0/",
+    "upload_image": "https://ccmixter.org/i/snowflake/60187.jpg",
+    "files": [
+      {
+        "download_url": "https://ccmixter.org/content/snowflake/snowflake_-_Sunrise_Remix.mp3",
+        "file_seconds": 248
+      }
+    ]
+  },
+  {
+    "upload_id": "59921",
+    "upload_name": "Temple Beat",
+    "user_name": "texasradiofish",
+    "user_real_name": "Mary",
+    "user_page_url": "https://ccmixter.org/people/texasradiofish",
+    "file_page_url": "https://ccmixter.org/files/texasradiofish/59921",
+    "license_url": "http://creativecommons.org/licenses/by-nc/3.0/",
+    "upload_image": "https://ccmixter.org/i/texasradiofish/59921.jpg",
+    "files": [
+      {
+        "download_url": "https://ccmixter.org/content/texasradiofish/texasradiofish_-_Temple_Beat.mp3",
+        "file_seconds": 190
+      }
+    ]
+  }
+]

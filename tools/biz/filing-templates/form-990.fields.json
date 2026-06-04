@@ -1,0 +1,19 @@
+{
+  "formId": "form-990",
+  "title": "Return of Organization Exempt From Income Tax (990 series)",
+  "officialFormNumber": "IRS 990 / 990-EZ / 990-N",
+  "jurisdiction": "US-Federal",
+  "agency": "IRS",
+  "category": "annual-return",
+  "disclaimer": "Self-help document service — NOT legal or tax advice. Which 990 variant applies and how to complete it depend on the organization's facts; verify with the IRS and consult a licensed professional. You file with the IRS yourself.",
+  "fields": [
+    { "name": "organization_name", "label": "Organization legal name", "type": "string", "required": true, "help": "Exact legal name of the exempt organization." },
+    { "name": "ein", "label": "EIN", "type": "ein", "required": true, "sensitive": true, "help": "The organization's EIN. Supplied transiently to complete the return." },
+    { "name": "tax_year", "label": "Tax year covered", "type": "string", "required": true, "help": "The accounting period the return covers (calendar or fiscal)." },
+    { "name": "variant", "label": "990 variant", "type": "enum", "required": true, "enum": ["990", "990-EZ", "990-N", "990-PF"], "help": "Neutral list — the USER selects the variant their organization is required to file. Eligibility depends on gross receipts/assets/type; see IRS instructions. The tool does not decide this for you." },
+    { "name": "gross_receipts", "label": "Gross receipts", "type": "number", "required": false, "help": "Used by the user to determine which variant applies." },
+    { "name": "total_assets", "label": "Total assets (end of year)", "type": "number", "required": false, "help": "Used by the user to determine which variant applies." },
+    { "name": "mission_statement", "label": "Mission / program description", "type": "text", "required": false, "help": "Brief statement of the organization's exempt purpose and programs." },
+    { "name": "principal_officer", "label": "Principal officer name", "type": "string", "required": true, "sensitive": true, "help": "Name of the principal officer / contact." }
+  ]
+}

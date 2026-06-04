@@ -1,0 +1,21 @@
+{
+  "formId": "ss4-ein",
+  "title": "Application for Employer Identification Number (EIN)",
+  "officialFormNumber": "IRS SS-4",
+  "jurisdiction": "US-Federal",
+  "agency": "IRS",
+  "category": "ein",
+  "disclaimer": "Self-help document service — NOT legal or tax advice. The EIN is free from the IRS. Verify the current form and instructions at the IRS before filing; you file with the IRS yourself.",
+  "fields": [
+    { "name": "legal_name", "label": "Legal name of entity", "type": "string", "required": true, "help": "The exact legal name of the business as registered with the state (must match the formation documents)." },
+    { "name": "trade_name", "label": "Trade name / DBA (if different)", "type": "string", "required": false, "help": "Any assumed/'doing business as' name, if different from the legal name." },
+    { "name": "responsible_party_name", "label": "Name of responsible party", "type": "string", "required": true, "sensitive": true, "help": "The individual who controls/manages the entity. General info: see SS-4 instructions for who qualifies." },
+    { "name": "responsible_party_tin", "label": "Responsible party SSN/ITIN/EIN", "type": "string", "required": true, "sensitive": true, "help": "Identifying number of the responsible party. Supplied transiently for the form; not retained." },
+    { "name": "mailing_address", "label": "Mailing address", "type": "address", "required": true, "help": "Where the IRS should send correspondence." },
+    { "name": "entity_type", "label": "Type of entity", "type": "enum", "required": true, "enum": ["sole-proprietor", "partnership", "corporation", "s-corporation", "llc", "nonprofit-corporation", "estate", "trust", "other"], "help": "Neutral list — the USER selects the type that matches their already-chosen structure. The app does not advise which to pick." },
+    { "name": "reason_for_applying", "label": "Reason for applying", "type": "enum", "required": true, "enum": ["started-new-business", "hired-employees", "banking-purposes", "changed-type-of-organization", "purchased-going-business", "created-trust", "created-pension-plan", "other"], "help": "Reason the EIN is needed, per SS-4." },
+    { "name": "start_date", "label": "Date business started or acquired", "type": "date", "required": true, "help": "The date the entity began or was acquired." },
+    { "name": "principal_activity", "label": "Principal business activity", "type": "string", "required": true, "help": "Short description of what the business does." },
+    { "name": "expects_employees", "label": "Expect to have employees in next 12 months?", "type": "boolean", "required": false, "help": "Affects employment-tax fields on the form." }
+  ]
+}

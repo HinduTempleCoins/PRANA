@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "description": "Official-player embed allow-list for the SoapBox profile player (EE2-11). Deny by default; enforced by tools/media/iframe-embed-resolver.mjs (EE2-12).",
+  "providers": [
+    {
+      "provider": "youtube",
+      "label": "YouTube",
+      "hosts": ["youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be", "youtube-nocookie.com", "www.youtube-nocookie.com"],
+      "embedHost": "www.youtube-nocookie.com",
+      "idPattern": "^[A-Za-z0-9_-]{11}$",
+      "embedUrlTemplate": "https://www.youtube-nocookie.com/embed/{id}?rel=0&modestbranding=1"
+    },
+    {
+      "provider": "vimeo",
+      "label": "Vimeo",
+      "hosts": ["vimeo.com", "www.vimeo.com", "player.vimeo.com"],
+      "embedHost": "player.vimeo.com",
+      "idPattern": "^\\d{6,12}$",
+      "embedUrlTemplate": "https://player.vimeo.com/video/{id}?dnt=1"
+    },
+    {
+      "provider": "dailymotion",
+      "label": "Dailymotion",
+      "hosts": ["dailymotion.com", "www.dailymotion.com", "dai.ly", "geo.dailymotion.com"],
+      "embedHost": "geo.dailymotion.com",
+      "idPattern": "^[A-Za-z0-9]{5,12}$",
+      "embedUrlTemplate": "https://geo.dailymotion.com/player.html?video={id}"
+    },
+    {
+      "provider": "threespeak",
+      "label": "3Speak",
+      "hosts": ["3speak.tv", "www.3speak.tv"],
+      "embedHost": "3speak.tv",
+      "idPattern": "^[a-z0-9.-]+/[A-Za-z0-9-]+$",
+      "embedUrlTemplate": "https://3speak.tv/embed?v={id}"
+    },
+    {
+      "provider": "archive",
+      "label": "Internet Archive",
+      "hosts": ["archive.org", "www.archive.org"],
+      "embedHost": "archive.org",
+      "idPattern": "^[A-Za-z0-9._-]{2,128}$",
+      "embedUrlTemplate": "https://archive.org/embed/{id}"
+    }
+  ],
+  "iframe": {
+    "sandbox": "allow-scripts allow-presentation allow-popups allow-popups-to-escape-sandbox",
+    "allow": "accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen",
+    "referrerPolicy": "strict-origin-when-cross-origin",
+    "clickToStart": true,
+    "allowFullscreen": true
+  },
+  "denyHosts": [
+    "2embed.cc", "2embed.to", "2embed.ru", "vidsrc.to", "vidsrc.me", "vidsrc.xyz",
+    "vidsrc.net", "embedsito.com", "fembed.com", "streamtape.com", "doodstream.com",
+    "mixdrop.co", "upstream.to", "vidcloud.co", "gomovies.sx", "fmovies.to"
+  ]
+}

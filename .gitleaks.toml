@@ -1,0 +1,30 @@
+# Gitleaks configuration for the PRANA repo.
+#
+# We extend the upstream default ruleset (so all of gitleaks' built-in secret
+# detectors stay active) and then add a narrow allowlist for the ONE secret-
+# shaped string that is intentionally public in this repo.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Intentionally-public dev material that must not fail the scan."
+
+# --- Why this allowlist exists -------------------------------------------------
+# The Hardhat / Anvil account #0 private key
+#   0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80
+# is one of the most widely published private keys in all of Ethereum tooling:
+# it is hard-coded into Hardhat, Foundry/Anvil, and countless tutorials as the
+# default deterministic dev account. It controls NOTHING of value (it is funded
+# only on throwaway local dev chains) and is referenced on purpose in our README
+# and genesis dev docs so contributors can import the pre-funded dev account.
+# Allowlisting it by regex keeps the scan green WITHOUT the blanket
+# "ignore all 64-hex strings" hammer that would mask a real leaked key.
+regexes = [
+  '''0x(?i)ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80''',
+]
+
+# Belt-and-suspenders: also scope it to the docs where it legitimately appears,
+# so the same string flagged in an unexpected file would still surface.
+paths = [
+  '''chain/genesis/.*''',
+]

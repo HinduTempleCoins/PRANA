@@ -1,0 +1,55 @@
+# gickup — repo mirror/backup config (EXAMPLE; copy to gickup.yml and fill in).
+# https://github.com/cooperspencer/gickup
+#
+# Purpose: disaster-recovery mirror of the PRANA repos to an independent host
+# (Codeberg/Forgejo or GitLab) so the project survives a GitHub outage or
+# account loss. gickup is a single Go binary that clones each source repo and
+# pushes a mirror to the destination on each run (drive it from cron).
+#
+# IMPORTANT: never commit a real token. Use environment-variable interpolation
+# (gickup expands ${VAR}) and keep the real values in a gitignored .env /
+# systemd EnvironmentFile, NOT in this file. See README.md in this directory.
+
+source:
+  github:
+    - token_file: ""              # leave empty -> falls back to ${GITHUB_TOKEN}
+      token: "${GITHUB_TOKEN}"    # read-only PAT (repo:read) for the source repos
+      user: HinduTempleCoins
+      # Explicit include-list so we mirror exactly the repos we mean to:
+      #   - the public PRANA chain repo (this one)
+      #   - <SECOND_REPO> placeholder for the next repo in the ecosystem to add
+      include:
+        - PRANA
+        - <SECOND_REPO>
+      # Mirror full history incl. all branches + tags (true backup, not a snapshot).
+      wiki: true
+      issues: false               # source/code DR only; issues live on GitHub
+
+destination:
+  # Pick ONE of the blocks below by leaving its host set and removing the other.
+  # The destination host + owner are left as <MIRROR_TARGET> placeholders.
+
+  # --- Option A: Codeberg / any Forgejo or Gitea instance (own-infra ethos) ---
+  gitea:
+    - token: "${MIRROR_TOKEN}"    # write PAT on the mirror host
+      url: https://codeberg.org   # or your self-hosted Forgejo URL
+      user: <MIRROR_TARGET>       # the org/user that owns the mirrors on Codeberg
+      # Create mirrors under this owner; gickup makes them if missing.
+      visibility:
+        repositories: private     # keep DR copies private by default
+
+  # --- Option B: GitLab (free-tier mirror target) -----------------------------
+  # gitlab:
+  #   - token: "${MIRROR_TOKEN}"
+  #     url: https://gitlab.com
+  #     user: <MIRROR_TARGET>     # GitLab group/namespace that owns the mirrors
+  #     visibility:
+  #       repositories: private
+
+# Operational knobs (optional; sane DR defaults shown).
+cron: "0 4 * * *"                 # gickup's built-in scheduler: daily 04:00 (see README for cron-vs-systemd)
+log:
+  timeformat: "2006-01-02 15:04:05"
+metrics:
+  prometheus:
+    port: 0                       # set >0 to expose mirror-success metrics for Uptime Kuma/Grafana

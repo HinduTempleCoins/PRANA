@@ -1,0 +1,13 @@
+{
+  "id": "ocd-person/1111-aaaa-2222-bbbb",
+  "name": "Jane Q. Public",
+  "party": "Democratic",
+  "jurisdiction": { "name": "Texas" },
+  "current_role": {
+    "title": "Representative",
+    "org_classification": "lower",
+    "district": "100"
+  },
+  "email": "jane.public@example.gov",
+  "openstates_url": "https://openstates.org/person/jane-q-public/"
+}

@@ -1,0 +1,18 @@
+{
+  "formId": "registered-agent",
+  "title": "Registered Agent Designation / Consent",
+  "officialFormNumber": "Generic (state-parameterized; e.g. TX SOS Form 401-A consent)",
+  "jurisdiction": "US-Generic",
+  "agency": "Secretary of State (the relevant state)",
+  "category": "registered-agent",
+  "disclaimer": "Self-help document service — NOT legal or tax advice. A registered agent must have a physical address in the state and must consent. This tool can produce the designation document but CANNOT act as your registered agent. Verify requirements with the relevant Secretary of State; you file yourself.",
+  "fields": [
+    { "name": "state", "label": "State", "type": "string", "required": true, "help": "The state whose registered-agent rules apply (TX-deep; expandable). Requirements vary by state." },
+    { "name": "entity_name", "label": "Entity name", "type": "string", "required": true, "help": "The business the agent represents." },
+    { "name": "agent_type", "label": "Agent type", "type": "enum", "required": true, "enum": ["individual", "organization"], "help": "Whether the registered agent is a person or a registered organization." },
+    { "name": "agent_name", "label": "Registered agent name", "type": "string", "required": true, "help": "Name of the consenting agent." },
+    { "name": "agent_physical_address", "label": "Agent physical address (in-state)", "type": "address", "required": true, "help": "A physical street address in the state (not a PO box). Process can be served here during business hours." },
+    { "name": "consent_given", "label": "Agent consents to appointment", "type": "boolean", "required": true, "help": "The agent must affirmatively consent. Many states require a signed consent." },
+    { "name": "effective_date", "label": "Effective date", "type": "date", "required": false, "help": "Date the designation/consent takes effect." }
+  ]
+}

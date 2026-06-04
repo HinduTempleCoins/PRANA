@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "version": "1.0.0",
+  "title": "Generic U.S. business-credit pathway (structured KB)",
+  "disclaimer": "General information only — NOT legal, tax, or financial advice. Verify every step against the official source and consult a licensed professional. No founder PII.",
+  "principle": "A business builds credit under its OWN identity (entity + EIN + D-U-N-S) so the business credit bureaus track it SEPARATELY from the owner's personal credit. The mechanism is a real, verifiable on-time payment history under the business's identity — there is no legitimate shortcut.",
+  "steps": [
+    { "id": "entity-good-standing", "order": 0, "gate": [], "cost": "varies", "source": "Secretary of State", "title": "State-registered entity in good standing", "why": "A business needs a distinct legal identity before it can have its own credit. Good standing (reports filed, fees paid) is what vendors/bureaus check." },
+    { "id": "ein", "order": 1, "gate": ["entity-good-standing"], "cost": "free", "source": "IRS", "title": "EIN (federal tax ID)", "why": "The business's federal identifier; needed for banking, taxes, bureaus, vendors. Free from the IRS. NOT a personal-credit workaround." },
+    { "id": "business-bank-account", "order": 2, "gate": ["entity-good-standing", "ein"], "cost": "varies", "source": "the bank directly", "title": "Dedicated business bank account", "why": "Backbone of separation (no commingling) and a prerequisite vendors/lenders expect." },
+    { "id": "business-presence", "order": 3, "gate": ["entity-good-standing"], "cost": "varies", "source": "the business's own records", "title": "Business street address + listed phone (NAP)", "why": "Consistent name/address/phone is what bureaus and vendors match on; mismatches cause verification failures." },
+    { "id": "duns", "order": 4, "gate": ["entity-good-standing", "business-presence"], "cost": "free", "source": "Dun & Bradstreet", "title": "D-U-N-S number", "why": "Opens the D&B file; scores like PAYDEX key off it. Free to request — do not imply payment is required." },
+    { "id": "net30-tradelines", "order": 5, "gate": ["ein", "business-bank-account", "duns"], "cost": "varies", "source": "each vendor directly (confirm it reports + to which bureau)", "title": "Net-30 starter vendor tradelines", "why": "Reporting vendor accounts (e.g. office/industrial suppliers) build the file. Always verify a vendor currently reports — relationships change.", "guardrail": "REAL accounts the business actually buys from and pays. No rented/seasoned tradelines." },
+    { "id": "payment-history", "order": 6, "gate": ["net30-tradelines"], "cost": "free", "source": "the business bureaus + each vendor", "title": "3-6 months on-time payment history", "why": "Consistent on-time/early payments build the positive file. Time + real payments are the mechanism; no shortcut." },
+    { "id": "revolving-credit", "order": 7, "gate": ["payment-history"], "cost": "varies", "source": "each issuer directly", "title": "Revolving business credit (store then general cards)", "why": "Broadens credit mix and available capital under the business name; personal-guarantee reliance tends to decrease over time." },
+    { "id": "maintain", "order": 8, "gate": ["revolving-credit"], "cost": "varies", "source": "Secretary of State + the business bureaus", "title": "Maintain good standing + on-time payments + monitoring", "why": "Lapses in good standing or late payments damage the file the pathway built.", "ongoing": true }
+  ],
+  "prohibited": [
+    { "id": "cpn", "tags": ["cpn", "credit privacy number", "ein no ssn"], "reason": "Associated with fraud (SSN substitution).", "redirectTo": "net30-tradelines" },
+    { "id": "synthetic-identity", "tags": ["synthetic identity", "fabricated id"], "reason": "Identity fraud.", "redirectTo": "entity-good-standing" },
+    { "id": "seasoned-tradelines", "tags": ["seasoned tradeline", "rented tradeline", "buy tradeline", "authorized user for hire"], "reason": "Fabricated history.", "redirectTo": "net30-tradelines" },
+    { "id": "boost-fast", "tags": ["boost fast", "instant business credit", "guaranteed approval"], "reason": "No legitimate shortcut exists.", "redirectTo": "payment-history" }
+  ]
+}

@@ -1,0 +1,25 @@
+name: release-please
+
+# Automated release PRs driven by Conventional Commits (see commitlint.config.cjs).
+# release-please opens/maintains a "release PR" that bumps the version + updates
+# the changelog from the commit history; merging it cuts a GitHub release + tag.
+# Config-only: there is intentionally NO npm publish / build step here.
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: write # create release commits, tags, and the release itself
+  pull-requests: write # open/update the release PR
+
+jobs:
+  release-please:
+    name: release-please
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          # `simple` = a plain CHANGELOG + version file, no language-specific
+          # packaging assumptions (we are not publishing a package).
+          release-type: simple
+          package-name: prana

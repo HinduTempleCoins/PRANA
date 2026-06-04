@@ -1,0 +1,26 @@
+[
+  {
+    "itemId": 30000,
+    "name": "Lapis Hopper",
+    "trail": "spark",
+    "palette": { "body": "#1d3a66", "edge": "#7fbfff", "glow": "#cfe8ff" }
+  },
+  {
+    "itemId": 30001,
+    "name": "Ember Hopper",
+    "trail": "spark",
+    "palette": { "body": "#5a2410", "edge": "#ffb27f", "glow": "#fff0c8" }
+  },
+  {
+    "itemId": 30002,
+    "name": "Violet Comet",
+    "trail": "ribbon",
+    "palette": { "body": "#2a1a55", "edge": "#b07fff", "glow": "#e6ccff" }
+  },
+  {
+    "itemId": 30003,
+    "name": "Verdant Spring",
+    "trail": "ribbon",
+    "palette": { "body": "#143a2a", "edge": "#7fffb0", "glow": "#ccffe0" }
+  }
+]

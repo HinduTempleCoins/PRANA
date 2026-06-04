@@ -1,0 +1,17 @@
+[
+  {
+    "inputs": [],
+    "name": "EmptyTable",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotStrictlyIncreasing",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "ZeroTotalWeight",
+    "type": "error"
+  }
+]

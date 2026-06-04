@@ -1,0 +1,21 @@
+# Echidna config for the PRANA BurnMine property harness.
+# Run:  echidna . --contract EchidnaBurnMine --config echidna.yaml
+# (echidna binary is NOT installed in this environment — this config + the property
+#  contract contracts/echidna/EchidnaBurnMine.sol are ready for when it is.)
+
+testMode: property          # use the boolean echidna_* property functions
+testLimit: 50000            # fuzz transactions per property
+seqLen: 50                  # max call sequence length per run
+shrinkLimit: 5000
+
+# Compile the project with crytic-compile via hardhat (artifacts already produced by `hardhat compile`).
+cryticArgs: ["--compile-force-framework", "hardhat"]
+
+# Only the harness is the entry point; it deploys its own tokens + mine in its constructor.
+# No deployer/sender tricks needed — the harness IS the sole fuzzed caller.
+coverage: true
+corpusDir: "echidna-corpus"
+
+# Keep block.timestamp/number lively so any time-dependent paths can be explored.
+maxTimeDelay: 604800        # up to 1 week between txs
+maxBlockDelay: 50000

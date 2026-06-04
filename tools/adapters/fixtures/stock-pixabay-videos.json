@@ -1,0 +1,17 @@
+{
+  "total": 120,
+  "totalHits": 120,
+  "hits": [
+    {
+      "id": 125,
+      "pageURL": "https://pixabay.com/videos/id-125/",
+      "type": "film",
+      "picture_id": "12345678",
+      "videos": {
+        "large": { "url": "https://cdn.pixabay.com/video/large.mp4", "width": 1920, "height": 1080, "size": 6615235 },
+        "medium": { "url": "https://cdn.pixabay.com/video/medium.mp4", "width": 1280, "height": 720, "size": 2807331 }
+      },
+      "user": "Coverr-Free-Footage"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "status": "OK",
+  "searchresult": {
+    "summary": {
+      "page": "1 of 1",
+      "page_total": 1,
+      "count": 2,
+      "query": "public records"
+    },
+    "0": {
+      "relevance": 95,
+      "state": "TX",
+      "bill_number": "HB1",
+      "bill_id": 1700001,
+      "change_hash": "abc123",
+      "url": "https://legiscan.com/TX/bill/HB1/2024",
+      "text_url": "https://legiscan.com/TX/text/HB1/2024",
+      "research_url": "https://legiscan.com/TX/research/HB1/2024",
+      "last_action_date": "2024-03-15",
+      "last_action": "Referred to Committee on State Affairs",
+      "title": "An Act relating to public records transparency"
+    },
+    "1": {
+      "relevance": 80,
+      "state": "TX",
+      "bill_number": "SB22",
+      "bill_id": 1700002,
+      "change_hash": "def456",
+      "url": "https://legiscan.com/TX/bill/SB22/2024",
+      "last_action_date": "2024-02-02",
+      "last_action": "Filed",
+      "title": "An Act relating to open meetings"
+    }
+  }
+}

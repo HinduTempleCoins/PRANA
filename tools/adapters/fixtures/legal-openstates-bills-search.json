@@ -1,0 +1,37 @@
+{
+  "results": [
+    {
+      "id": "ocd-bill/aaaa-1111-2222-3333",
+      "identifier": "HB 1",
+      "title": "An Act relating to public records transparency",
+      "jurisdiction": { "name": "Texas" },
+      "session": "88",
+      "classification": ["bill"],
+      "subject": ["Public Records", "Government Operations"],
+      "first_action_date": "2024-01-09",
+      "latest_action_date": "2024-03-15",
+      "latest_action_description": "Referred to Committee on State Affairs",
+      "sponsorships": [
+        { "name": "Jane Q. Public", "classification": "primary", "primary": true }
+      ],
+      "openstates_url": "https://openstates.org/tx/bills/88/HB1/",
+      "sources": [{ "url": "https://capitol.texas.gov/BillLookup/History.aspx?Bill=HB1" }]
+    },
+    {
+      "id": "ocd-bill/bbbb-4444-5555-6666",
+      "identifier": "SB 22",
+      "title": "An Act relating to open meetings",
+      "jurisdiction": { "name": "Texas" },
+      "session": "88",
+      "classification": ["bill"],
+      "subject": ["Open Meetings"],
+      "first_action_date": "2024-01-12",
+      "latest_action_date": "2024-02-02",
+      "latest_action_description": "Filed",
+      "sponsorships": [],
+      "openstates_url": "https://openstates.org/tx/bills/88/SB22/",
+      "sources": []
+    }
+  ],
+  "pagination": { "page": 1, "per_page": 20, "max_page": 1, "total_items": 2 }
+}

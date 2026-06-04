@@ -1,0 +1,13 @@
+{
+  "count": 1,
+  "offsetMark": "*",
+  "nextPage": null,
+  "granules": [
+    {
+      "granuleId": "BILLS-118hr3016ih-section1",
+      "title": "Section 1. Short title.",
+      "granuleClass": "section",
+      "granuleLink": "https://api.govinfo.gov/packages/BILLS-118hr3016ih/granules/BILLS-118hr3016ih-section1/summary"
+    }
+  ]
+}

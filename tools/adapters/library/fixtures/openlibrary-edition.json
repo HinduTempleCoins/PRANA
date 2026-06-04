@@ -1,0 +1,12 @@
+{
+  "key": "/books/OL7353617M",
+  "title": "Fantastic Mr. Fox",
+  "isbn_10": ["0140328726"],
+  "isbn_13": ["9780140328721"],
+  "publishers": ["Puffin"],
+  "publish_date": "1988",
+  "number_of_pages": 96,
+  "works": [{ "key": "/works/OL45804W" }],
+  "ocaid": "fantasticmrfox0000dahl",
+  "covers": [6498519]
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "itemId": 30000,
+    "name": "Granite Runes",
+    "glyph": "rune",
+    "palette": { "stone": "#2a3550", "edge": "#7fa8d6", "glow": "#bfe0ff" }
+  },
+  {
+    "itemId": 30001,
+    "name": "Emberstone",
+    "glyph": "rune",
+    "palette": { "stone": "#4a2418", "edge": "#ffb27f", "glow": "#fff0c8" }
+  },
+  {
+    "itemId": 30002,
+    "name": "Void Sigils",
+    "glyph": "sigil",
+    "palette": { "stone": "#241a40", "edge": "#b07fff", "glow": "#e6ccff" }
+  },
+  {
+    "itemId": 30003,
+    "name": "Jade Tablets",
+    "glyph": "sigil",
+    "palette": { "stone": "#163a2c", "edge": "#7fffb0", "glow": "#ccffe0" }
+  }
+]

@@ -1,0 +1,42 @@
+{
+  "$comment": "Maps each data adapter to the PRANA/SoapBox component that consumes it. An adapter is any *.mjs in this dir tree (recursing one level into topic subdirs like legal/ library/ media/), excluding *.test.mjs and the linter itself. Top-level adapters are keyed by bare filename; nested adapters by their POSIX path ('legal/courtlistener.mjs'). check-consumer-matrix.mjs fails CI if an adapter has no consumer here, or if this file names an adapter that does not exist. 'component' is a generic role name, not a brand.",
+  "consumers": {
+    "base.mjs": "shared-adapter-layer",
+    "subgraph.mjs": "explorer-indexer-frontend",
+    "qdrant.mjs": "useful-work-research-index",
+    "blockscout.mjs": "deploy-wizard-verifier",
+    "rpc.mjs": "wallet-core",
+    "coingecko.mjs": "price-feed-service",
+    "defillama.mjs": "tvl-feed-service",
+    "walletconnect-stub.mjs": "wallet-dapp-session-transport",
+
+    "legal/legal-base.mjs": "law-soapbox-adapter-layer",
+    "legal/courtlistener.mjs": "law-soapbox-case-graph",
+    "legal/recap.mjs": "law-soapbox-docket-search",
+    "legal/caselaw-access.mjs": "law-soapbox-historical-corpus",
+    "legal/govinfo.mjs": "law-soapbox-federal-publications",
+    "legal/uscode-uslm.mjs": "law-soapbox-statute-corpus",
+    "legal/ecfr.mjs": "law-soapbox-regulation-corpus",
+    "legal/federal-register.mjs": "law-soapbox-rulemaking-feed",
+    "legal/openstates.mjs": "law-soapbox-state-legislation",
+    "legal/legiscan.mjs": "law-soapbox-state-legislation",
+    "legal/congress-gov.mjs": "law-soapbox-federal-legislation",
+
+    "library/library-base.mjs": "library-adapter-layer",
+    "library/gutendex.mjs": "library-book-catalog",
+    "library/internet-archive.mjs": "library-archive-catalog",
+    "library/open-library.mjs": "library-book-metadata",
+    "library/wayback.mjs": "library-capture-window",
+
+    "media/jamendo.mjs": "media-catalog-audio",
+    "media/free-music-archive.mjs": "media-catalog-audio",
+    "media/freesound.mjs": "media-catalog-audio",
+    "media/ccmixter.mjs": "media-catalog-audio",
+    "media/musopen.mjs": "media-catalog-audio",
+    "media/stock-media.mjs": "media-catalog-stock",
+    "media/tmdb.mjs": "media-discovery-spine",
+    "media/watchmode.mjs": "media-discovery-spine",
+    "media/trakt.mjs": "media-discovery-spine",
+    "media/omdb-simkl.mjs": "media-discovery-spine"
+  }
+}

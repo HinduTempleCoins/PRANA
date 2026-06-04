@@ -1,0 +1,19 @@
+{
+  "results": [
+    {
+      "hierarchy": { "title": "40", "part": "60", "section": "60.1" },
+      "headings": { "title": "Protection of Environment", "part": "Standards of Performance", "section": "Applicability" },
+      "full_text_excerpt": "...standards of performance for <em>new</em> stationary sources...",
+      "score": 12.3,
+      "structure_index": 4821,
+      "starts_on": "2024-01-01",
+      "ends_on": null
+    }
+  ],
+  "meta": {
+    "total_count": 1,
+    "current_page": 1,
+    "total_pages": 1,
+    "per_page": 20
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "members": [
+    {
+      "bioguideId": "M000087",
+      "name": "Maloney, Carolyn B.",
+      "partyName": "Democratic",
+      "state": "New York",
+      "district": 12,
+      "terms": { "item": [{ "chamber": "House of Representatives" }] },
+      "url": "https://api.congress.gov/v3/member/M000087?format=json"
+    },
+    {
+      "bioguideId": "C001098",
+      "name": "Cruz, Ted",
+      "partyName": "Republican",
+      "state": "Texas",
+      "district": null,
+      "terms": { "item": [{ "chamber": "Senate" }] },
+      "url": "https://api.congress.gov/v3/member/C001098?format=json"
+    }
+  ],
+  "pagination": { "count": 2, "next": null, "prev": null }
+}

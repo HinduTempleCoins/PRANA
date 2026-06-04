@@ -1,0 +1,53 @@
+name: scorecard
+
+# OpenSSF Scorecard — measures supply-chain / repo-security health (branch
+# protection, pinned deps, token permissions, dangerous workflows, etc.) and
+# publishes the findings as SARIF to the GitHub Security tab (Code scanning).
+# A README badge can be added later (do not edit README here).
+on:
+  branch_protection_rule:
+  # Weekly re-scan so the score tracks repo drift even without pushes.
+  schedule:
+    - cron: "31 6 * * 1"
+  push:
+    branches: ["main"]
+
+# Top-level least privilege; the analysis job widens only what it needs.
+permissions: read-all
+
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    permissions:
+      # Needed to upload the SARIF results to the code-scanning dashboard.
+      security-events: write
+      # Needed by the publish step / OIDC token for the public results.
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Run analysis
+        uses: ossf/scorecard-action@v2.4.0
+        with:
+          results_file: scorecard-results.sarif
+          results_format: sarif
+          # publish_results uploads to the public OpenSSF API that backs the
+          # README badge; safe for a public repo.
+          publish_results: true
+
+      # Keep the raw SARIF as an artifact for debugging / offline review.
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: scorecard-results
+          path: scorecard-results.sarif
+          retention-days: 5
+
+      - name: Upload to code-scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: scorecard-results.sarif

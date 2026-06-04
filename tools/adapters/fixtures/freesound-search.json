@@ -1,0 +1,43 @@
+{
+  "count": 2,
+  "next": "https://freesound.org/apiv2/search/text/?query=temple&page=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 316847,
+      "name": "Temple Bell.wav",
+      "username": "InspectorJ",
+      "license": "http://creativecommons.org/licenses/by/3.0/",
+      "url": "https://freesound.org/people/InspectorJ/sounds/316847/",
+      "duration": 6.42,
+      "previews": {
+        "preview-hq-mp3": "https://freesound.org/data/previews/316/316847-hq.mp3",
+        "preview-lq-mp3": "https://freesound.org/data/previews/316/316847-lq.mp3"
+      },
+      "download": "https://freesound.org/apiv2/sounds/316847/download/",
+      "tags": ["bell", "temple", "metal", "ring"],
+      "description": "A struck temple bell, recorded close.",
+      "images": {
+        "waveform_m": "https://freesound.org/data/displays/316/316847_wave_m.png",
+        "spectral_m": "https://freesound.org/data/displays/316/316847_spec_m.png"
+      }
+    },
+    {
+      "id": 411089,
+      "name": "drone_loop.flac",
+      "username": "klankbeeld",
+      "license": "http://creativecommons.org/publicdomain/zero/1.0/",
+      "url": "https://freesound.org/people/klankbeeld/sounds/411089/",
+      "duration": 30.0,
+      "previews": {
+        "preview-lq-mp3": "https://freesound.org/data/previews/411/411089-lq.mp3"
+      },
+      "download": "https://freesound.org/apiv2/sounds/411089/download/",
+      "tags": ["drone", "ambient", "loop"],
+      "description": "Ambient drone loop.",
+      "images": {
+        "waveform_m": "https://freesound.org/data/displays/411/411089_wave_m.png"
+      }
+    }
+  ]
+}

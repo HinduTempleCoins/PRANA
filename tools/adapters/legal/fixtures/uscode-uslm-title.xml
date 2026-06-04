@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uslm xmlns="http://xml.house.gov/schemas/uslm/1.0">
+  <main>
+    <title identifier="/us/usc/t17">
+      <num value="17">Title 17</num>
+      <heading>Copyrights</heading>
+      <section identifier="/us/usc/t17/s102">
+        <num value="102">§ 102.</num>
+        <heading>Subject matter of copyright: In general</heading>
+        <content>
+          <p>Copyright protection subsists, in accordance with this title, in original works of authorship fixed in any tangible medium of expression.</p>
+        </content>
+      </section>
+      <section identifier="/us/usc/t17/s107">
+        <num value="107">§ 107.</num>
+        <heading>Limitations on exclusive rights: Fair use</heading>
+        <content>
+          <p>Notwithstanding the provisions of sections 106 and 106A, the fair use of a copyrighted work is not an infringement of copyright.</p>
+        </content>
+      </section>
+    </title>
+  </main>
+</uslm>
