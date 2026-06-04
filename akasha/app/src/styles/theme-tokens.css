@@ -1,0 +1,88 @@
+/* ───────────────────────────────────────────────────────────────────────
+ * PROVENANCE: copied verbatim from
+ *   tools/brain/state/design/akasha/theme-tokens.css
+ * (Akasha design tokens, Q11). Do not edit here — edit the source of truth and
+ * re-copy. Kept in-app so 'vite build' bundles the tokens without reaching
+ * outside the app root.
+ * ─────────────────────────────────────────────────────────────────────── */
+
+/* Akasha wallet — design tokens (Q11)
+ *
+ * The "dark-field / luminous-core" palette from the brand spine:
+ *   Akasha = the ether / dark space (the field) ; Prana = the creative spark
+ *   (the luminous core). Dark-blue field with a lighter-blue light toward the
+ *   center — matches the user's logo instinct and the PRANA/Akasha/Tesla thread.
+ *
+ * Continuity: hues are aligned with the Naga game palette already in the repo
+ * (games/naga: void #05080f, fields #0a1a44/#0a3a66, glows #62d0ff/#7fd6ff/
+ * #bff0ff, text #cfe0ff) so the wallet, games, and explorer read as one family.
+ *
+ * Contrast: every text/bg pair below is WCAG 2.1 AA verified — see theme.md.
+ * Plain CSS custom properties; no build step, framework-agnostic.
+ */
+
+:root {
+  /* ---- Core brand ramp: dark field → luminous core ---- */
+  --void-deep:   #05080f; /* near-black blue — the deepest Akasha field / page bg */
+  --field-dark:  #0a1428; /* dark-blue field — panels, raised dark areas */
+  --field-mid:   #0d1830; /* slightly lifted field — cards on the field */
+  --core-glow:   #62d0ff; /* the luminous center — primary accent / Prana spark */
+  --core-glow-soft: #7fd6ff; /* softer glow for hover/secondary luminance */
+  --core-halo:   #bff0ff; /* brightest halo — highlights, focus rings, sparkles */
+  --prana-pulse: #9be4ff; /* lively accent pulse — links, active states */
+
+  /* ---- Semantic surfaces ---- */
+  --bg:          var(--void-deep);   /* app background */
+  --surface:     var(--field-mid);   /* cards, modals, list rows */
+  --surface-alt: var(--field-dark);  /* nav, sidebars, wells */
+  --border:      #1c2c52;            /* hairline dividers on the dark field */
+  --border-glow: #2a4f8a;            /* emphasized border near interactive glow */
+
+  /* ---- Semantic text (all AA on --bg / --surface) ---- */
+  --text:        #cfe0ff; /* primary text  (15.04:1 on void) */
+  --text-muted:  #9fb6e8; /* secondary     (9.86:1 on void)  */
+  --text-faint:  #6f8fc8; /* tertiary/help (6.14:1 on void)  */
+  --text-on-accent: #05080f; /* text on the bright glow button (11.44:1) */
+
+  /* ---- Semantic accents ---- */
+  --accent:        var(--core-glow);
+  --accent-hover:  var(--core-glow-soft);
+  --accent-active: var(--prana-pulse);
+  --link:          var(--prana-pulse);
+
+  /* ---- Status ---- */
+  --success: #7fffb0; /* 16.06:1 on void — confirmed tx, healthy clarity score */
+  --warning: #ffe27f; /* high contrast amber for caution */
+  --danger:  #ff7f9f; /* 8.39:1 on void — failed tx, rug flags */
+
+  /* ---- Focus & elevation ---- */
+  --focus-ring:  var(--core-halo);
+  --shadow-glow: 0 0 40px rgba(98, 208, 255, 0.18); /* the naga #game glow, tokenized */
+
+  /* ---- The glow-gradient recipe (the "Prana spark in the Akasha field") ----
+   * Radial: bright core fading into the dark field. Used for the splash/logo
+   * backdrop, primary-button sheen, and the wallet's "create/seal" moment.
+   * Mirrors how games/naga draws its procedural glow (bright center → dark). */
+  --gradient-core-glow:
+    radial-gradient(circle at 50% 40%,
+      var(--core-halo)   0%,
+      var(--core-glow)   18%,
+      var(--field-dark)  60%,
+      var(--void-deep)  100%);
+
+  /* Subtle ambient field gradient for large surfaces (top-lit dark blue). */
+  --gradient-field:
+    radial-gradient(120% 80% at 50% -10%,
+      #0c1a3a 0%,
+      var(--field-dark) 45%,
+      var(--void-deep) 100%);
+}
+
+/* Optional high-contrast preference: bump muted text up to primary. */
+@media (prefers-contrast: more) {
+  :root {
+    --text-muted: #cfe0ff;
+    --text-faint: #9fb6e8;
+    --border: #2a4f8a;
+  }
+}

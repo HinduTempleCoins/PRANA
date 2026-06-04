@@ -27,9 +27,11 @@ keystore/
 # the pre-commit guard contains secret/brand keywords as detection patterns (would trip itself)
 /tools/git-hooks/
 
-# Akasha wallet front-end — private product, local-only until published
+# Akasha (Mist) wallet — published; only deps + build output stay local
 /akasha/node_modules/
-/akasha/
+/akasha/lib/node_modules
+/akasha/app/node_modules/
+/akasha/app/dist/
 
 # adapters reuse contracts/node_modules via a local symlink — never commit it
 /tools/adapters/node_modules

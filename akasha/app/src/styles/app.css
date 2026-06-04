@@ -1,0 +1,242 @@
+/* app.css — Akasha shell styling, built on the design tokens (theme-tokens.css).
+ * Dark-only by intent (the brand IS the Akasha field). */
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  background-image: var(--gradient-field);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.app {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 16px 48px;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- header / brand ---- */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 0;
+  flex-wrap: wrap;
+}
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-core {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--gradient-core-glow);
+  box-shadow: var(--shadow-glow);
+}
+.brand-name { font-size: 22px; font-weight: 700; letter-spacing: 0.5px; }
+.brand-sub { color: var(--text-faint); font-size: 12px; }
+
+/* ---- tabs ---- */
+.tabs, .tab-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.tab {
+  background: var(--surface-alt);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 16px;
+  cursor: pointer;
+  font: inherit;
+}
+.tab:hover { color: var(--text); border-color: var(--border-glow); }
+.tab.active {
+  color: var(--text-on-accent);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.app-main { flex: 1; }
+.app-footer {
+  margin-top: 32px;
+  color: var(--text-faint);
+  font-size: 12px;
+  text-align: center;
+}
+
+/* ---- cards / layout ---- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+}
+.card h3 { margin-top: 0; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.row-between { display: flex; align-items: center; justify-content: space-between; }
+.wallet-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) 1fr;
+  gap: 16px;
+}
+@media (max-width: 720px) { .wallet-grid { grid-template-columns: 1fr; } }
+
+/* ---- inputs / buttons ---- */
+.search-input {
+  width: 100%;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+}
+.search-input:focus { outline: 2px solid var(--focus-ring); border-color: var(--border-glow); }
+label { display: flex; flex-direction: column; gap: 6px; color: var(--text-muted); font-size: 13px; }
+.btn {
+  background: var(--accent);
+  color: var(--text-on-accent);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn:hover { background: var(--accent-hover); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.link-btn {
+  background: none; border: none; color: var(--link);
+  cursor: pointer; font: inherit; padding: 0; text-decoration: underline;
+}
+.search-row { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+.search-row .search-input { flex: 1; min-width: 220px; }
+
+/* ---- tables ---- */
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+  text-align: left; color: var(--text-faint); font-weight: 600;
+  border-bottom: 1px solid var(--border); padding: 8px 10px;
+}
+.data-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.data-table tr.clickable, .clickable { cursor: pointer; }
+.data-table tr.clickable:hover { background: var(--surface-alt); }
+
+/* ---- key/value lists ---- */
+.kv { display: grid; grid-template-columns: 140px 1fr; gap: 6px 12px; margin: 8px 0; }
+.kv dt { color: var(--text-faint); }
+.kv dd { margin: 0; word-break: break-all; }
+
+/* ---- utility text classes ---- */
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.accent { color: var(--accent); }
+.muted { color: var(--text-muted); }
+.warn { color: var(--warning); }
+.success { color: var(--success); }
+.danger { color: var(--danger); }
+
+/* ---- banners ---- */
+.banner {
+  border-radius: 10px; padding: 12px 16px; margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+.banner.danger { border-color: var(--danger); color: var(--danger); background: rgba(255,127,159,0.07); }
+.banner.success { border-color: var(--success); color: var(--success); background: rgba(127,255,176,0.06); }
+
+/* ---- wallet specifics ---- */
+.dev-badge {
+  display: inline-block;
+  background: rgba(255,226,127,0.12);
+  border: 1px solid var(--warning);
+  color: var(--warning);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.account-list { list-style: none; margin: 8px 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.account {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 8px 10px; border-radius: 8px; cursor: pointer; border: 1px solid transparent;
+}
+.account:hover { background: var(--surface-alt); }
+.account.active { background: var(--surface-alt); border-color: var(--border-glow); }
+.account-label { font-size: 13px; }
+.account-addr { font-size: 12px; color: var(--text-faint); }
+.balance-card { text-align: center; }
+.balance-label { color: var(--text-faint); font-size: 12px; }
+.balance-amount { font-size: 30px; font-weight: 700; margin-top: 4px; }
+
+.mnemonic-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  list-style-position: inside; padding: 0; margin: 12px 0;
+}
+.mnemonic-grid li {
+  background: var(--surface-alt); border: 1px solid var(--border);
+  border-radius: 6px; padding: 8px 10px;
+}
+.preview { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 14px; }
+
+.code-block {
+  background: var(--void-deep); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px; overflow: auto; font-size: 12px;
+  color: var(--text-muted);
+}
+code { font-family: ui-monospace, monospace; color: var(--prana-pulse); }
+a { color: var(--link); }
+
+/* ---- NFT inventory (AK7+AK8) ---- */
+.inventory-head { margin-bottom: 4px; }
+.banner.muted { color: var(--text-muted); }
+.banner.warn { border-color: var(--warning); color: var(--warning); background: rgba(255,226,127,0.06); }
+.account-select { max-width: 280px; padding: 6px 10px; }
+
+.nft-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+.nft-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.nft-card:hover { border-color: var(--border-glow); box-shadow: var(--shadow-glow); }
+.nft-art {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--gradient-core-glow);
+  overflow: hidden;
+}
+.nft-art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.nft-art-glyph { font-size: 40px; color: var(--core-halo); opacity: 0.85; }
+.nft-qty, .nft-standard {
+  position: absolute; top: 6px;
+  font-size: 11px; font-weight: 700;
+  padding: 2px 7px; border-radius: 999px;
+  background: rgba(5,8,15,0.72); color: var(--text);
+  border: 1px solid var(--border-glow);
+}
+.nft-qty { right: 6px; color: var(--core-halo); }
+.nft-standard { left: 6px; color: var(--text-faint); }
+.nft-meta { padding: 8px 10px; }
+.nft-title {
+  font-size: 13px; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.nft-sub {
+  display: flex; justify-content: space-between; gap: 8px;
+  margin-top: 4px; font-size: 11px; color: var(--text-faint);
+}
+.nft-collection { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nft-id { flex-shrink: 0; }

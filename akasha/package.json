@@ -1,0 +1,12 @@
+{
+  "name": "akasha-wallet",
+  "private": true,
+  "type": "module",
+  "description": "Client-side wallet + gateway front-end libraries (private).",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "viem": "^2.21.0"
+  }
+}
