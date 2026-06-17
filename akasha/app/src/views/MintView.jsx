@@ -94,8 +94,8 @@ export default function MintView({ rpc }) {
 
   return (
     <section>
-      <div className="dev-badge" title="Mints against the local dev chain only.">
-        MINT · local PRANA chain only · binds RoyaltyNFT / MutableStatNFT / EntrainmentProgramNFT
+      <div className="dev-badge" title="Mints against the PRANA alpha testnet (chain 108369).">
+        MINT · PRANA alpha testnet · binds RoyaltyNFT / MutableStatNFT / EntrainmentProgramNFT
       </div>
       {error && <p className="danger">{String(error.message ?? error)}</p>}
 

@@ -7,6 +7,10 @@
     "test": "node --test"
   },
   "dependencies": {
+    "ethers": "^6.16.0",
     "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.1"
   }
 }
