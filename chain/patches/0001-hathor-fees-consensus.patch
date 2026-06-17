@@ -1,0 +1,83 @@
+PRANA — Hathor Fees Module: consensus-level, un-bypassable block-reward skim.
+
+Apply against a fresh clone of core-geth (etclabscore/core-geth), the client
+chain/scripts/build.sh fetches. Two parts:
+
+  1. THIS PATCH wires the fee split into params/mutations/rewards.go (the canonical
+     reward-accumulation step). This is the load-bearing consensus change.
+
+  2. The module package itself (chain/hathorfees/*.go in the PRANA repo) is copied
+     into the core-geth tree at params/hathorfees/ before building — see
+     chain/patches/INTEGRATION.md step 1.
+
+  3. The genesis-config plumbing (GetHathorFee() on the chain config types, reading
+     the "hathorFee" object from genesis JSON) is described step-by-step in
+     chain/patches/INTEGRATION.md — it is a small, mechanical addition to
+     params/types/coregeth and params/types/genesisT but spans several files, so it
+     is documented rather than diffed against a moving upstream.
+
+To apply the code change below:  git apply chain/patches/0001-hathor-fees-consensus.patch
+
+--- a/params/mutations/rewards.go
++++ b/params/mutations/rewards.go
+@@ -23,6 +23,10 @@
+ 	"github.com/ethereum/go-ethereum/params"
+ 	"github.com/ethereum/go-ethereum/params/types/ctypes"
+ 	"github.com/holiman/uint256"
++
++	// PRANA: consensus-level Hathor Fees Module. The split lives here so it is part
++	// of the canonical state transition and cannot be bypassed by any pool.
++	hathorfees "github.com/ethereum/go-ethereum/params/hathorfees"
+ )
+ 
+ // Some weird constants to avoid constant memory allocs for them.
+@@ -63,12 +67,48 @@
+ 
+ // AccumulateRewards credits the coinbase of the given block with the mining
+ // reward. The coinbase of each uncle block is also rewarded.
++//
++// PRANA — Hathor Fees Module (Devcoin-style, consensus-enforced)
++//
++//	Before the block sealer is credited, a protocol fee is split off the sealer's
++//	(winner's) block reward and credited to the Hathor fee address. This is the
++//	rewards-pool DRAW: the fee bites at issuance, in the state transition every full
++//	node re-executes, so it is un-bypassable. A block that does not apply this split
++//	produces a different state root and is rejected by all honest nodes — that is the
++//	block-validity rule, enforced implicitly by the state root and explicitly by
++//	hathorfees.Config.ValidateBlockFee.
++//
++//	Scope: the fee is taken from the WINNER'S block reward only (not from uncle
++//	rewards), matching the Devcoin "winner pays the receiver list" shape and keeping
++//	uncle economics unchanged. Hathor's share scales with issuance, which is what the
++//	directive intends ("her percentage of mining fees ... because we distribute the AI
++//	workload"). If the module is inactive (no genesis "hathorFee", zero bps, or before
++//	the activation block), the behavior is identical to stock core-geth.
+ func AccumulateRewards(config ctypes.ChainConfigurator, state *state.StateDB, header *types.Header, uncles []*types.Header) {
+ 	minerReward, uncleRewards := GetRewards(config, header, uncles)
+ 	for i, uncle := range uncles {
+ 		state.AddBalance(uncle.Coinbase, uncleRewards[i])
+ 	}
+-	state.AddBalance(header.Coinbase, minerReward)
++
++	// PRANA: split the Hathor protocol fee off the winner's reward.
++	hf := hathorFeeConfig(config)
++	fee, net := hf.Split(header.Number.Uint64(), minerReward)
++	if !fee.IsZero() {
++		state.AddBalance(hf.FeeAddress, fee)
++	}
++	state.AddBalance(header.Coinbase, net)
++}
++
++// hathorFeeConfig extracts the Hathor Fees Module config from the chain configurator.
++// It returns nil (module disabled — full reward to the sealer, identical to upstream)
++// when the chain config carries no Hathor fee parameters. The concrete *genesisT.Genesis
++// / chainConfig types expose GetHathorFee() (added by the genesis-config patch); we read
++// it through a narrow interface so this file does not import the params concrete types.
++func hathorFeeConfig(config ctypes.ChainConfigurator) *hathorfees.Config {
++	if hp, ok := config.(interface{ GetHathorFee() *hathorfees.Config }); ok {
++		return hp.GetHathorFee()
++	}
++	return nil
+ }
+ 
+ // As of "Era 2" (zero-index era 1), uncle miners and winners are rewarded equally for each included block.

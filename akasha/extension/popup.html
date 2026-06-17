@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Akasha</title>
+  <style>
+    :root { --bg:#0b0e14; --panel:#131826; --gold:#d4a23c; --fg:#e7e3d8; --mut:#8a8f9c; --up:#3fb950; --down:#f85149; }
+    body { width: 340px; margin:0; background:var(--bg); color:var(--fg); font:14px/1.5 system-ui,sans-serif; }
+    .wrap { padding:14px 16px; }
+    h1 { font-size:16px; color:var(--gold); margin:0 0 2px; }
+    .sub { color:var(--mut); font-size:11px; margin-bottom:12px; }
+    input { width:100%; box-sizing:border-box; background:#0a0d15; border:1px solid #232a3a; border-radius:6px; color:var(--fg); padding:8px; margin:4px 0; }
+    button { background:var(--gold); color:#1a1206; border:none; border-radius:6px; padding:8px 12px; font-weight:700; cursor:pointer; }
+    button.ghost { background:transparent; color:var(--mut); border:1px solid #232a3a; }
+    .row { display:flex; gap:8px; align-items:center; }
+    .card { background:var(--panel); border:1px solid #232a3a; border-radius:8px; padding:10px; margin:8px 0; }
+    code { background:#0a0d15; border:1px solid #232a3a; border-radius:4px; padding:1px 4px; font-size:11px; word-break:break-all; }
+    .mut { color:var(--mut); } .hide { display:none; } .danger { color:var(--down); font-size:12px; }
+    .addr { font-size:12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Akasha <span class="mut" style="font-size:11px">Alpha</span></h1>
+    <div class="sub">PRANA wallet · chain 108369 · testnet</div>
+
+    <div id="lockView">
+      <div class="mut" id="lockHint">Unlock your vault to connect dapps.</div>
+      <input id="pw" type="password" placeholder="Vault password" />
+      <div class="row">
+        <button id="unlockBtn">Unlock</button>
+        <button id="createBtn" class="ghost">Create new</button>
+      </div>
+      <div id="lockErr" class="danger"></div>
+    </div>
+
+    <div id="walletView" class="hide">
+      <div class="card"><div class="mut">Account</div><div id="addr" class="addr">—</div></div>
+      <div id="pending"></div>
+      <button id="lockBtn" class="ghost" style="margin-top:8px">Lock</button>
+    </div>
+
+    <div id="createView" class="hide">
+      <div class="mut">Write down these 12 words. Anyone with them controls this wallet.</div>
+      <div class="card" id="mnemonic"></div>
+      <button id="createDone">I've backed it up</button>
+    </div>
+  </div>
+  <script src="wallet-core.bundle.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

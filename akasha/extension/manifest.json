@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Akasha — PRANA Wallet",
+  "version": "0.1.0",
+  "description": "TronLink-style in-browser wallet for the PRANA chain. Injects an EIP-1193 provider (window.ethereum) so dapps can connect; keys are generated and held client-side, never transmitted.",
+  "action": { "default_popup": "popup.html", "default_title": "Akasha" },
+  "background": { "service_worker": "background.js", "type": "module" },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  "web_accessible_resources": [
+    { "resources": ["inpage.js"], "matches": ["http://*/*", "https://*/*"] }
+  ],
+  "permissions": ["storage"],
+  "host_permissions": ["https://rpc.prana.alpha.melek.salon/*"],
+  "icons": {}
+}

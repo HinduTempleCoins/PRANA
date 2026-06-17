@@ -56,8 +56,8 @@ export default function WalletView({ rpc }) {
 
   return (
     <section>
-      <div className="dev-badge" title="This wallet runs against the local dev chain only.">
-        DEV WALLET · local PRANA chain only · do not store real value
+      <div className="dev-badge" title="This wallet runs against the PRANA alpha testnet (chain 108369).">
+        ALPHA TESTNET · PRANA chain 108369 · test value only, not real funds
       </div>
 
       {error && <p className="danger">{String(error.message ?? error)}</p>}

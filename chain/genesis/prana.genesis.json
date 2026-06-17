@@ -11,7 +11,13 @@
     "istanbulBlock": 0,
     "berlinBlock": 0,
     "londonBlock": 0,
-    "ethash": {}
+    "ethash": {},
+    "hathorFee": {
+      "_comment": "PRANA Hathor Fees Module — consensus-enforced protocol fee on block issuance (Devcoin model). feeBps is in basis points (500 = 5.00%; OPERATOR sets the real number). feeAddress is the protocol beneficiary (intended: the deployed HathorFeeTreasury contract — REPLACE this placeholder at genesis-prep; must be non-zero). activationBlock = first height the fee applies. See chain/patches/INTEGRATION.md.",
+      "feeBps": 500,
+      "feeAddress": "0x000000000000000000000000000000000048A740",
+      "activationBlock": 0
+    }
   },
   "nonce": "0x0000000000000042",
   "timestamp": "0x0",
