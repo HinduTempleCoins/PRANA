@@ -17,6 +17,7 @@ import {
 } from '../lib/wallet.js';
 import { formatPranaWithSymbol, parsePranaToWei, truncateAddress } from '../lib/format.js';
 import { isNetworkError } from '../lib/rpc.js';
+import { looksLikeRenName, resolveRenName } from '../lib/ren.js';
 
 // DEV WALLET (publicly-known Anvil/Hardhat key #0) — pre-funded on the dev genesis.
 // Clearly labelled and NEVER to be used with real value. Importing it lets the user
@@ -366,11 +367,13 @@ function SendForm({ ks, rpc, account, setError }) {
   const [preview, setPreview] = useState(null); // dryRun result + built tx
   const [status, setStatus] = useState(null); // 'previewing' | 'sending' | 'sent' | error str
   const [result, setResult] = useState(null); // { hash, receipt }
+  const [resolved, setResolved] = useState(null); // REN name -> resolved 0x (for display)
 
   function reset() {
     setPreview(null);
     setResult(null);
     setStatus(null);
+    setResolved(null);
   }
 
   async function doPreview(e) {
@@ -381,7 +384,17 @@ function SendForm({ ks, rpc, account, setError }) {
     try {
       const value = parsePranaToWei(amount || '0');
       const provider = rpc.asProvider();
-      const tx = await buildTx({ from: account.address, to, value }, provider);
+      // REN: if the recipient is a name (ryan.melek), resolve it to a 0x address first.
+      let recipient = to.trim();
+      if (looksLikeRenName(recipient)) {
+        const addr = await resolveRenName(provider, recipient);
+        if (!addr) throw new Error(`"${recipient}" doesn't resolve to an address yet — check the name on REN.`);
+        setResolved({ name: recipient, address: addr });
+        recipient = addr;
+      } else {
+        setResolved(null);
+      }
+      const tx = await buildTx({ from: account.address, to: recipient, value }, provider);
       const sim = await dryRun(tx, provider);
       setPreview({ tx, sim });
       setStatus(sim.ok ? 'ready' : 'revert');
@@ -419,7 +432,7 @@ function SendForm({ ks, rpc, account, setError }) {
           To
           <input
             className="search-input"
-            placeholder="0x… recipient"
+            placeholder="0x… or name.melek"
             value={to}
             onChange={(e) => {
               setTo(e.target.value);
@@ -428,6 +441,13 @@ function SendForm({ ks, rpc, account, setError }) {
             spellCheck={false}
             autoComplete="off"
           />
+          {resolved ? (
+            <small className="muted">
+              {resolved.name} → {truncateAddress(resolved.address)}
+            </small>
+          ) : looksLikeRenName(to) ? (
+            <small className="muted">REN name — resolves on preview.</small>
+          ) : null}
         </label>
         <label>
           Amount (PRANA)
