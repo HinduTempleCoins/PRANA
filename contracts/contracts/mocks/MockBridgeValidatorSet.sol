@@ -28,7 +28,7 @@ contract MockBridgeValidatorSet is IBridgeValidatorSet {
         return _isValidator[account];
     }
 
-    function quorum() external view returns (uint256) {
+    function threshold() external view returns (uint256) {
         return _quorum;
     }
 

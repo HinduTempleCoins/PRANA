@@ -285,7 +285,7 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard {
         return hasRole(ATTESTER_ROLE, account);
     }
 
-    /// @notice The current K threshold under the configured set (external `quorum()` or `localQuorum`).
+    /// @notice The current K threshold under the configured set (external `threshold()` or `localQuorum`).
     function requiredQuorum() external view returns (uint256) {
         return _quorum();
     }
@@ -313,12 +313,13 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard {
         if (!isAttester(account)) revert NotAnAttester(account);
     }
 
-    /// @dev External validator set's `quorum()` if wired, else the built-in `localQuorum`. Reverts if
+    /// @dev External validator set's `threshold()` if wired, else the built-in `localQuorum`. Reverts if
     ///      neither yields a usable (>0) threshold so a deposit can never auto-mint on a single
-    ///      attestation by accident.
+    ///      attestation by accident. (`threshold()` is the selector the real {FederatedBridgeValidatorSet}
+    ///      exposes — calling the old `quorum()` reverted against it, DoSing inbound deposits.)
     function _quorum() internal view returns (uint256 q) {
         IBridgeValidatorSet vs = validatorSet;
-        q = address(vs) != address(0) ? vs.quorum() : localQuorum;
+        q = address(vs) != address(0) ? vs.threshold() : localQuorum;
         if (q == 0) revert NoQuorumConfigured();
     }
 }
