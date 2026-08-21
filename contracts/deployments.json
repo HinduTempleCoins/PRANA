@@ -10,6 +10,22 @@
     "BurnMine": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
     "DividendDistributor": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
     "VoteEscrow": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
-    "GaugeController": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6"
+    "GaugeController": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+    "WPRANA": "0x3155755b79aA083bd953911C92705B7aA82a18F9",
+    "UniswapV2Factory": "0x5bf5b11053e734690269C6B9D438F8C9d48F528A",
+    "UniswapV2Router": "0xffa7CA1AEEEbBc30C874d32C7e22F052BbEa0429",
+    "wAPIS_testnet": "0x3aAde2dCD2Df6a8cAc689EE797591b2913658659",
+    "Pair_wAPIS_WPRANA": "0x4D0EBeEc5bCd6f3eA38fF0742e21737c8Ae02D5e"
+  },
+  "amm": {
+    "WPRANA": "0x3155755b79aA083bd953911C92705B7aA82a18F9",
+    "factory": "0x5bf5b11053e734690269C6B9D438F8C9d48F528A",
+    "router": "0xffa7CA1AEEEbBc30C874d32C7e22F052BbEa0429",
+    "deployedAt": "2026-08-21T01:40:43.617Z",
+    "note": "AMM + first pair + swap proven on PRANA testnet 108369 (2026-08-21). wAPIS_testnet is a standalone ERC-20 for the trade-leg proof; reconcile with the bridge-registered wAPIS (keccak256 APIS) later.",
+    "pairs": {
+      "wAPIS/WPRANA": "0x4D0EBeEc5bCd6f3eA38fF0742e21737c8Ae02D5e"
+    },
+    "provenSwap": "1 WPRANA -> 98.72 wAPIS (2026-08-21)"
   }
 }

@@ -1,0 +1,30 @@
+{
+  "config": {
+    "chainId": 712217,
+    "homesteadBlock": 0,
+    "eip150Block": 0,
+    "eip155Block": 0,
+    "eip158Block": 0,
+    "byzantiumBlock": 0,
+    "constantinopleBlock": 0,
+    "petersburgBlock": 0,
+    "istanbulBlock": 0,
+    "berlinBlock": 0,
+    "londonBlock": 0,
+    "ethash": {},
+    "ecip1099FBlock": 0,
+    "hathorFee": {
+      "feeBps": 500,
+      "feeAddress": "0x0000000000000000000000000000000000000000",
+      "activationBlock": 0
+    }
+  },
+  "nonce": "0x0000000000000042",
+  "timestamp": "0x0",
+  "extraData": "0x5052414e41206d61696e6e6574202d2066616972206c61756e6368202d2056616e204b757368",
+  "gasLimit": "0x1c9c380",
+  "difficulty": "0x20000",
+  "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "coinbase": "0x0000000000000000000000000000000000000000",
+  "alloc": {}
+}

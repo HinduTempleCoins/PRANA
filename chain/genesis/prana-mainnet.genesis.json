@@ -1,0 +1,38 @@
+{
+  "_STAGED": "PRANA MAINNET fair-launch genesis — STAGED 2026-08-19, NOT yet launched. Mirrors the testnet (chain/genesis/prana.genesis.json) with the mainnet changes: NO premine (empty alloc), a distinct chainId, Etchash (ECIP-1099), and the hathorFee DevCoin fee. OPERATOR must confirm the two ⚠ values before genesis, then this file seals the chain permanently.",
+  "config": {
+    "chainId": 712217,
+    "_chainId_note": "✅ OPERATOR-CONFIRMED mainnet chainId 712217 (2026-08-21) — verified unused on chainid.network, differs from testnet 108369. Register at chainlist to claim. Sets the genesis hash + wallet network.",
+    "homesteadBlock": 0,
+    "eip150Block": 0,
+    "eip155Block": 0,
+    "eip158Block": 0,
+    "byzantiumBlock": 0,
+    "constantinopleBlock": 0,
+    "petersburgBlock": 0,
+    "istanbulBlock": 0,
+    "berlinBlock": 0,
+    "londonBlock": 0,
+    "ethash": {},
+    "ecip1099FBlock": 0,
+    "_etchash_note": "ethash + ecip1099FBlock:0 = Etchash (ECIP-1099 'Thanos') from block 0 — the pinned testnet decision (low-VRAM/laptop-friendly). No RandomX.",
+    "hathorFee": {
+      "_comment": "Consensus-enforced protocol fee on block issuance (DevCoin model): a share of each block's reward is routed to feeAddress (the HathorFeeTreasury) which splits it per the DAO-governed weights. feeBps in basis points.",
+      "feeBps": 500,
+      "_feeBps_note": "⚠ OPERATOR CONFIRM the DevCoin fee (500 = 5.00%). This is the protocol-level cut routed to the treasury/AI-work fund; the HASH:TASK split beyond it is dynamic via HashTaskWeightConfig.",
+      "feeAddress": "0x0000000000000000000000000000000000000000",
+      "_feeAddress_note": "MUST be set to the deployed HathorFeeTreasury address at genesis-prep (non-zero) OR use a pre-computed deterministic deploy address. Zero here is a placeholder.",
+      "activationBlock": 0
+    }
+  },
+  "nonce": "0x0000000000000042",
+  "timestamp": "0x0",
+  "extraData": "0x5052414e41206d61696e6e6574202d2066616972206c61756e6368202d2056616e204b757368",
+  "_extraData_ascii": "PRANA mainnet - fair launch - Van Kush",
+  "gasLimit": "0x1c9c380",
+  "difficulty": "0x20000",
+  "_difficulty_note": "Low launch difficulty (below testnet 0x80000) so laptops mine Etchash day 1 (natural fair-launch bootstrap); the chain retargets up as hashrate joins.",
+  "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "coinbase": "0x0000000000000000000000000000000000000000",
+  "alloc": {}
+}
