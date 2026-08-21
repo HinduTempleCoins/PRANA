@@ -27,5 +27,15 @@
       "wAPIS/WPRANA": "0x4D0EBeEc5bCd6f3eA38fF0742e21737c8Ae02D5e"
     },
     "provenSwap": "1 WPRANA -> 98.72 wAPIS (2026-08-21)"
+  },
+  "bridge": {
+    "FederatedBridgeValidatorSet": "0x2a810409872AfC346F9B5b26571Fd6eC42EA4849",
+    "GrapheneDepositBridge": "0xb9bEECD1A582768711dE1EE7B0A1d582D9d72a6C",
+    "wMELEK": "0x8A93d247134d91e0de6f96547cB0204e5BE8e5D8",
+    "wVKBT": "0xF32D39ff9f6Aa7a7A64d7a4F00a54826Ef791a55",
+    "wCURE": "0x99dBE4AEa58E518C50a1c04aE9b48C9F6354612f",
+    "model": "K-of-N federated attesters (1-of-1 testnet) + slashable bonds + daily caps + pause + replay guard",
+    "provenCycle": "VKBT deposit->mint 100 wVKBT, burn->withdraw back to 0 (peg intact) 2026-08-21",
+    "note": "Hive-Engine Swap.X-style pegged bridge on PRANA testnet 108369. Contracts 74/74 tests. Remaining: off-chain Hive-Engine attester watcher + withdrawal watcher + KulaSwap pairs."
   }
 }

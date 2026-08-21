@@ -43,6 +43,20 @@ contract DeployBridge is Script {
         bridge.registerToken(tokenId, address(wmelek));
         console2.log("registered tokenId keccak(MELEK) -> wMELEK");
 
+        // wVKBT + wCURE — the Hive-Engine Swap.X tokens (VKBT/CURE bridged from Hive-Engine).
+        // 8 decimals to match Hive-Engine token precision, so the peg is exact 1:1.
+        bytes32 vkbtId = keccak256(bytes("VKBT"));
+        WrappedEcosystemToken wvkbt =
+            new WrappedEcosystemToken("Wrapped VKBT", "wVKBT", 8, vkbtId, admin, address(bridge));
+        bridge.registerToken(vkbtId, address(wvkbt));
+        console2.log("WrappedEcosystemToken (wVKBT):", address(wvkbt));
+
+        bytes32 cureId = keccak256(bytes("CURE"));
+        WrappedEcosystemToken wcure =
+            new WrappedEcosystemToken("Wrapped CURE", "wCURE", 8, cureId, admin, address(bridge));
+        bridge.registerToken(cureId, address(wcure));
+        console2.log("WrappedEcosystemToken (wCURE):", address(wcure));
+
         vm.stopBroadcast();
     }
 }
