@@ -45,6 +45,8 @@
     "wVKBT": "0xD42912755319665397FF090fBB63B1a31aE87Cee",
     "poolSize": "1,000,000 wVKBT (8-dec)",
     "proven": "deposit released 100 wVKBT from pool, withdraw locked it back; totalSupply constant throughout (never minted/burned); mint renounced 2026-08-21",
-    "tests": "34/34 GrapheneDepositBridge incl. 4 pooled-mode tests"
+    "tests": "34/34 GrapheneDepositBridge incl. 4 pooled-mode tests",
+    "wVKBT_WPRANA_pair": "0xe194beAcC82562A384d637C2B0596BB0A616DEbe",
+    "marketProven": "bridge released 500k wVKBT -> KulaSwap pair seeded (400k wVKBT/80 WPRANA) -> swap 1 WPRANA->~4924 wVKBT (2026-08-21)"
   }
 }
