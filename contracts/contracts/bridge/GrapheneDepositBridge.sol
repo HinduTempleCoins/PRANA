@@ -89,6 +89,13 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard, Pausable {
     /// @notice tokenId => amount already minted in the current window.
     mapping(bytes32 => uint256) private _mintedInWindow;
 
+    /// @notice tokenId => LOCK_RELEASE (pooled) mode. When true the bridge holds a PRE-FUNDED pool
+    ///         of the wrapper and RELEASES from it on deposit / LOCKS it back on withdraw, and NEVER
+    ///         mints or burns. Set once at registration; immutable. This removes mint authority as an
+    ///         attack surface entirely: wrapped supply is fixed at the pool, so no bug and no
+    ///         compromised quorum can inflate supply beyond the real backing (max loss = the pool).
+    mapping(bytes32 => bool) public lockReleaseMode;
+
     struct Deposit {
         bytes32 tokenId; // ecosystem token id being minted
         address recipient; // PRANA address credited
@@ -112,6 +119,7 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard, Pausable {
     event DailyMintCapUpdated(bytes32 indexed tokenId, uint256 cap);
     event DepositDeferredByCap(bytes32 indexed depositRef, bytes32 indexed tokenId, uint256 amount, uint256 cap);
     event TokenRegistered(bytes32 indexed tokenId, address indexed wrapped);
+    event LockReleaseModeSet(bytes32 indexed tokenId, address indexed wrapped);
     event TokenUnregistered(bytes32 indexed tokenId, address indexed wrapped);
     event DepositAttested(
         bytes32 indexed depositRef,
@@ -210,11 +218,26 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard, Pausable {
     /// @notice Register the PRANA-side wrapper for an ecosystem token id (mirror of
     ///         {WrappedTokenFactory.wrappedOf}). One wrapper per id; re-register is rejected.
     function registerToken(bytes32 tokenId, address wrapped) external onlyRole(ADMIN_ROLE) {
+        _registerToken(tokenId, wrapped, false);
+    }
+
+    /// @notice Register a wrapper in LOCK_RELEASE (pooled) mode: the bridge releases from a
+    ///         pre-funded pool and NEVER mints. After registering, fund the bridge with the wrapper
+    ///         and revoke the bridge's mint authority on it for the full no-mint-authority guarantee.
+    function registerTokenPooled(bytes32 tokenId, address wrapped) external onlyRole(ADMIN_ROLE) {
+        _registerToken(tokenId, wrapped, true);
+    }
+
+    function _registerToken(bytes32 tokenId, address wrapped, bool lockRelease) internal {
         if (tokenId == bytes32(0)) revert ZeroRef();
         if (wrapped == address(0)) revert ZeroAddress();
         address existing = wrappedToken[tokenId];
         if (existing != address(0)) revert TokenAlreadyRegistered(tokenId, existing);
         wrappedToken[tokenId] = wrapped;
+        if (lockRelease) {
+            lockReleaseMode[tokenId] = true;
+            emit LockReleaseModeSet(tokenId, wrapped);
+        }
         emit TokenRegistered(tokenId, wrapped);
     }
 
@@ -305,7 +328,7 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard, Pausable {
             if (_tryConsumeDailyCap(tokenId, amount)) {
                 d.minted = true;
                 depositProcessed[depositRef] = true;
-                IWrappedEcosystemTokenMint(wrapped).mint(recipient, amount, depositRef);
+                _credit(tokenId, wrapped, recipient, amount, depositRef);
                 emit DepositMinted(depositRef, tokenId, recipient, wrapped, amount);
             } else {
                 emit DepositDeferredByCap(depositRef, tokenId, amount, dailyMintCap[tokenId]);
@@ -328,8 +351,22 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard, Pausable {
         _consumeDailyCap(d.tokenId, d.amount);
         d.minted = true;
         depositProcessed[depositRef] = true;
-        IWrappedEcosystemTokenMint(wrapped).mint(d.recipient, d.amount, depositRef);
+        _credit(d.tokenId, wrapped, d.recipient, d.amount, depositRef);
         emit DepositMinted(depositRef, d.tokenId, d.recipient, wrapped, d.amount);
+    }
+
+    /// @dev Credit the recipient with wrapped tokens. In LOCK_RELEASE (pooled) mode: RELEASE from
+    ///      the bridge's pre-funded pool (a shortfall reverts — it means the whole backing is already
+    ///      bridged out, which cannot happen with a correctly sized pool). Else: MINT. The pooled path
+    ///      never touches mint authority, so no fake-mint can ever inflate wrapped supply.
+    function _credit(bytes32 tokenId, address wrapped, address recipient, uint256 amount, bytes32 ref)
+        internal
+    {
+        if (lockReleaseMode[tokenId]) {
+            IERC20(wrapped).safeTransfer(recipient, amount);
+        } else {
+            IWrappedEcosystemTokenMint(wrapped).mint(recipient, amount, ref);
+        }
     }
 
     // ===================================================================== //
@@ -354,10 +391,13 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard, Pausable {
         if (wrapped == address(0)) revert TokenNotRegistered(tokenId);
 
         nonce = withdrawalNonce++;
-        // Pull the wrapper in, then burn this bridge's own balance. The wrapper is {ERC20Burnable};
-        // burning our own held balance keeps the burn independent of any allowance edge cases.
+        // Pull the wrapper in. In LOCK_RELEASE (pooled) mode it STAYS in the pool — locked, recycled
+        // for the next deposit — so we never burn. In mint/burn mode we burn our own held balance
+        // (the wrapper is {ERC20Burnable}; burning our own balance avoids allowance edge cases).
         IERC20(wrapped).safeTransferFrom(msg.sender, address(this), amount);
-        IBurnable(wrapped).burn(amount);
+        if (!lockReleaseMode[tokenId]) {
+            IBurnable(wrapped).burn(amount);
+        }
 
         emit GrapheneWithdrawal(nonce, tokenId, msg.sender, wrapped, amount, destinationRef);
     }

@@ -37,5 +37,14 @@
     "model": "K-of-N federated attesters (1-of-1 testnet) + slashable bonds + daily caps + pause + replay guard",
     "provenCycle": "VKBT deposit->mint 100 wVKBT, burn->withdraw back to 0 (peg intact) 2026-08-21",
     "note": "Hive-Engine Swap.X-style pegged bridge on PRANA testnet 108369. Contracts 74/74 tests. Remaining: off-chain Hive-Engine attester watcher + withdrawal watcher + KulaSwap pairs."
+  },
+  "bridgePooled": {
+    "model": "LOCK_RELEASE (lock/recycle, NO mint authority) — operator design. Deposit releases from a pre-funded pool; withdraw locks back; supply fixed; mint authority renounced. Fake-mint impossible by construction; max exposure = pool.",
+    "FederatedBridgeValidatorSet": "0x976fcd02f7C4773dd89C309fBF55D5923B4c98a1",
+    "GrapheneDepositBridge": "0x19cEcCd6942ad38562Ee10bAfd44776ceB67e923",
+    "wVKBT": "0xD42912755319665397FF090fBB63B1a31aE87Cee",
+    "poolSize": "1,000,000 wVKBT (8-dec)",
+    "proven": "deposit released 100 wVKBT from pool, withdraw locked it back; totalSupply constant throughout (never minted/burned); mint renounced 2026-08-21",
+    "tests": "34/34 GrapheneDepositBridge incl. 4 pooled-mode tests"
   }
 }

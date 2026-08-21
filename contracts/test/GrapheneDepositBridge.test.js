@@ -396,3 +396,65 @@ describe("GrapheneDepositBridge", function () {
     });
   });
 });
+
+// The operator's LOCK_RELEASE ("lock what's returned, recycle when called") model: the bridge holds
+// a pre-funded pool and RELEASES on deposit / LOCKS on withdraw, never minting or burning. Mint
+// authority is renounced after funding, so wrapped supply is fixed — the fake-mint attack class is
+// impossible by construction (max exposure = the pool).
+describe("GrapheneDepositBridge — LOCK_RELEASE (pooled) mode", function () {
+  const POOL = 1_000_000n * 10n ** 8n;
+  const AMT = 100n * 10n ** 8n;
+  let bridge, wVkbt, admin, a1, a2, user;
+
+  beforeEach(async () => {
+    [admin, a1, a2, user] = await ethers.getSigners();
+    const B = await ethers.getContractFactory("GrapheneDepositBridge");
+    bridge = await B.deploy(admin.address, ZERO);
+    const W = await ethers.getContractFactory("WrappedEcosystemToken");
+    // custodian = admin so admin can mint the pool ONCE, then renounce.
+    wVkbt = await W.deploy("Wrapped VKBT", "wVKBT", 8, VKBT_ID, admin.address, admin.address);
+    await bridge.connect(admin).registerTokenPooled(VKBT_ID, await wVkbt.getAddress());
+    await wVkbt.connect(admin).mint(await bridge.getAddress(), POOL, ethers.id("genesis"));
+    await wVkbt.connect(admin).renounceRole(CUSTODIAN_ROLE, admin.address);
+    const ATTESTER = await bridge.ATTESTER_ROLE();
+    await bridge.connect(admin).grantRole(ATTESTER, a1.address);
+    await bridge.connect(admin).grantRole(ATTESTER, a2.address);
+    await bridge.connect(admin).setLocalQuorum(2);
+  });
+
+  async function deposit(ref, amount, to) {
+    await bridge.connect(a1).attestDeposit(ref, VKBT_ID, to.address, amount);
+    await bridge.connect(a2).attestDeposit(ref, VKBT_ID, to.address, amount);
+  }
+
+  it("deposit RELEASES from the pool without minting (supply fixed)", async () => {
+    const supply0 = await wVkbt.totalSupply();
+    await deposit(ethers.id("he-1"), AMT, user);
+    expect(await wVkbt.balanceOf(user.address)).to.equal(AMT);
+    expect(await wVkbt.balanceOf(await bridge.getAddress())).to.equal(POOL - AMT);
+    expect(await wVkbt.totalSupply()).to.equal(supply0); // never minted
+  });
+
+  it("withdraw LOCKS back into the pool without burning (recycle; supply fixed)", async () => {
+    const supply0 = await wVkbt.totalSupply();
+    await deposit(ethers.id("he-2"), AMT, user);
+    await wVkbt.connect(user).approve(await bridge.getAddress(), AMT);
+    await bridge.connect(user).withdraw(VKBT_ID, AMT, ethers.id("@dest"));
+    expect(await wVkbt.balanceOf(user.address)).to.equal(0n);
+    expect(await wVkbt.balanceOf(await bridge.getAddress())).to.equal(POOL); // recycled back
+    expect(await wVkbt.totalSupply()).to.equal(supply0); // never burned
+  });
+
+  it("cannot release more than the pool holds (backstop for a misconfigured pool)", async () => {
+    // First attester records the vote (no quorum yet, no release). The quorum-reaching second
+    // attester triggers the release, which exceeds the pool and reverts via safeTransfer.
+    // (A correctly-sized pool == backing cap, so this can't happen in practice.)
+    await bridge.connect(a1).attestDeposit(ethers.id("big"), VKBT_ID, user.address, POOL + 1n);
+    await expect(bridge.connect(a2).attestDeposit(ethers.id("big"), VKBT_ID, user.address, POOL + 1n))
+      .to.be.reverted;
+  });
+
+  it("no one can mint after renounce — fake-mint is impossible", async () => {
+    await expect(wVkbt.connect(admin).mint(user.address, 1n, ethers.id("x"))).to.be.reverted;
+  });
+});
