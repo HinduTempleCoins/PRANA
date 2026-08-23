@@ -48,5 +48,12 @@
     "tests": "34/34 GrapheneDepositBridge incl. 4 pooled-mode tests",
     "wVKBT_WPRANA_pair": "0xe194beAcC82562A384d637C2B0596BB0A616DEbe",
     "marketProven": "bridge released 500k wVKBT -> KulaSwap pair seeded (400k wVKBT/80 WPRANA) -> swap 1 WPRANA->~4924 wVKBT (2026-08-21)"
+  },
+  "tokenPrograms": {
+    "BatchAirdrop": "0xefc1aB2475ACb7E60499Efb171D173be19928a05",
+    "ContributionBountyEscrow": "0x870526b7973b56163a6997bB7C886F5E4EA53638",
+    "demoToken": "0x986aaa537b8cc170761FDAC6aC4fc7F9d8a20A8C",
+    "proven": "airdrop 750/150/100 to 3 recipients + bounty post→release 50 (2026-08-23)",
+    "note": "airdrop+bounty rails for the Bot token-programs.mjs orchestrator; PRANA testnet 108369"
   }
 }
