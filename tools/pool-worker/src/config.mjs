@@ -47,6 +47,14 @@ export function loadConfig(env = process.env) {
     minerPool: env.PRANA_MINER_POOL || 'pool.soapbox.community:3333',
     minerArgs: (env.PRANA_MINER_ARGS || '').split(' ').filter(Boolean),
 
+    // --- real AI compute (optional) ---
+    // An OpenAI-compatible endpoint on the contributor's own machine — Ollama
+    // (http://127.0.0.1:11434/v1), llama.cpp's server, vLLM, LM Studio, LocalAI. Absent
+    // it the TASK lane uses the deterministic stub, which is honest about being a stub.
+    // No weights and no prompts leave the contributor's machine except to this endpoint.
+    inferenceEndpoint: env.PRANA_INFERENCE_ENDPOINT || '',
+    inferenceTimeoutMs: Number(env.PRANA_INFERENCE_TIMEOUT_MS || 120_000),
+
     // --- hardware self-declaration (hardware.mjs refines this) ---
     hwProfile, // 'cpu' | 'gpu' | 'asic' | 'fpga'
 

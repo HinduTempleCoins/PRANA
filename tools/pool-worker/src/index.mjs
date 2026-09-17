@@ -17,6 +17,7 @@ import { Switcher, LANE } from './switcher.mjs';
 import { mineOne, toSubmission as hashSubmission } from './hash-lane.mjs';
 import { HashMiner } from './hash-miner.mjs';
 import { runTask, toSubmission as taskSubmission } from './task-lane.mjs';
+import { runInference, probeEndpoint } from './task-runner-inference.mjs';
 import { CoordinatorClient } from './coordinator-rpc.mjs';
 
 // Governed vardiff bounds. In the real daemon these are READ from
@@ -123,7 +124,34 @@ export function createDaemon(overrides = {}) {
     if (lane === LANE.TASK && task) {
       inFlightTask = true;
       try {
-        const result = runTask(task, cfg.workerAddr); // STUB compute
+        // REAL compute when the contributor has a local model server; the deterministic
+        // stub otherwise, so dev runs and CI work on a machine with nothing installed.
+        //
+        // A failed inference must NOT be submitted as a share. It throws, the claim is
+        // abandoned, and the coordinator can hand it to another worker instead of waiting
+        // out a machine that has gone away — and the worker drops to HASH rather than
+        // sitting idle.
+        let result;
+        if (cfg.inferenceEndpoint) {
+          try {
+            result = await runInference(task, cfg.workerAddr, {
+              endpoint: cfg.inferenceEndpoint,
+              timeoutMs: cfg.inferenceTimeoutMs,
+            });
+          } catch (e) {
+            // Abandon the claim and mine instead of idling. inFlightTask is cleared by
+            // the finally block below, so the next tick is free to take a different task
+            // or stay on HASH — the switcher decides, not this catch.
+            log.warn(`TASK abandoned: ${e.message} — mining instead this tick`);
+            if (hashMiner) {
+              hashMiner.start();
+              return LANE.HASH;
+            }
+            return LANE.IDLE;
+          }
+        } else {
+          result = runTask(task, cfg.workerAddr); // STUB compute
+        }
         const sub = taskSubmission(result);
         const r = await coordinator.submitTaskResult(sub);
         log.info(
