@@ -36,6 +36,17 @@ export function loadConfig(env = process.env) {
     workerAddr: env.PRANA_WORKER_ADDR || DEV_WORKER_ADDR,
     workerId: env.PRANA_WORKER_ID || 'prana-worker-dev',
 
+    // --- real mining (optional) ---
+    // Point these at a miner the contributor already runs and the HASH lane becomes real:
+    // the worker starts it when there is no task work and stops it when there is, so one
+    // card serves both lanes without the operator managing anything.
+    // Absent PRANA_MINER_BINARY the worker uses the synthetic hash lane, which is what dev
+    // runs and CI want and is honest about being synthetic.
+    minerBinary: env.PRANA_MINER_BINARY || '',
+    minerKind: env.PRANA_MINER_KIND || 'lolminer', // lolminer|trex|gminer|srbminer|testminer|custom
+    minerPool: env.PRANA_MINER_POOL || 'pool.soapbox.community:3333',
+    minerArgs: (env.PRANA_MINER_ARGS || '').split(' ').filter(Boolean),
+
     // --- hardware self-declaration (hardware.mjs refines this) ---
     hwProfile, // 'cpu' | 'gpu' | 'asic' | 'fpga'
 

@@ -15,6 +15,7 @@ import { detectHardware } from './hardware.mjs';
 import { VardiffController } from './vardiff.mjs';
 import { Switcher, LANE } from './switcher.mjs';
 import { mineOne, toSubmission as hashSubmission } from './hash-lane.mjs';
+import { HashMiner } from './hash-miner.mjs';
 import { runTask, toSubmission as taskSubmission } from './task-lane.mjs';
 import { CoordinatorClient } from './coordinator-rpc.mjs';
 
@@ -53,6 +54,38 @@ export function createDaemon(overrides = {}) {
     overrides.switcher ??
     new Switcher({ cap: hw, lanePref: cfg.lanePref, cooldownMs: cfg.switchCooldownMs });
 
+  // REAL hashing, when the contributor has pointed us at a miner binary. Absent it, the
+  // HASH branch falls through to the synthetic mineOne() so dev runs and tests still work
+  // on a machine with no GPU and nothing installed.
+  //
+  // Shares are submitted from the event rather than from the loop: a real miner produces
+  // them on its own schedule, not once per tick, and draining them on a tick would either
+  // lose shares or invent a queue that has to be drained anyway.
+  const hashMiner =
+    overrides.hashMiner ??
+    (cfg.minerBinary
+      ? new HashMiner({
+          binary: cfg.minerBinary,
+          kind: cfg.minerKind,
+          pool: cfg.minerPool,
+          workerAddr: cfg.workerAddr,
+          workerName: cfg.workerId,
+          extraArgs: cfg.minerArgs,
+        })
+      : null);
+
+  if (hashMiner) {
+    hashMiner.on('share', async (share) => {
+      const r = await coordinator.submitHashShare(hashSubmission(share));
+      if (!r.ok) log.warn(`HASH share submit failed: ${r.error}`);
+    });
+    // A miner that dies must not leave the worker looking busy — the switcher restarts it
+    // on the next HASH tick because start() is idempotent and running is false again.
+    hashMiner.on('exit', ({ code, signal }) =>
+      log.warn(`miner exited (code=${code} signal=${signal}) — will restart on the next HASH tick`));
+    hashMiner.on('error', (e) => log.warn(`miner failed to start: ${e.message}`));
+  }
+
   // injectable clock + scheduler for deterministic tests.
   const setTimer = overrides.setTimer ?? defaultSetTimer;
 
@@ -77,6 +110,15 @@ export function createDaemon(overrides = {}) {
     });
     if (switched) log.info(`switched -> ${lane}`);
 
+    // Leaving HASH frees the GPU for the task lane. This is the whole point of the
+    // switcher on a real machine: one card, task work when it exists, mining when it does
+    // not, and the contributor never touches it. Awaited so the card is actually released
+    // before a task starts competing for it.
+    if (hashMiner && lane !== LANE.HASH && hashMiner.running) {
+      await hashMiner.stop();
+      log.info('miner stopped — card released for TASK');
+    }
+
     // 3. do the work for the chosen lane and submit.
     if (lane === LANE.TASK && task) {
       inFlightTask = true;
@@ -91,6 +133,20 @@ export function createDaemon(overrides = {}) {
         );
       } finally {
         inFlightTask = false;
+      }
+    } else if (lane === LANE.HASH && hashMiner) {
+      // REAL hashing: a miner binary the contributor already runs. Starting is idempotent,
+      // so asking for HASH on consecutive ticks does not spawn a second miner and halve
+      // everyone's rate. Shares arrive on the 'share' event and are submitted there; this
+      // branch only has to make sure the card is running and report on it.
+      hashMiner.start();
+      const st = hashMiner.stats();
+      if (st.undercounting) {
+        log.warn(
+          `miner "${st.kind}" is hashing at ${st.hashrate} H/s but no accepted-share line ` +
+            `has ever matched — the parser needs a case for it (src/hash-miner.mjs). ` +
+            `Shares are still reaching the pool; this worker is undercounting them.`,
+        );
       }
     } else if (lane === LANE.HASH) {
       const difficulty = vardiff.currentTarget();
