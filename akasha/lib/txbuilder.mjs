@@ -14,7 +14,7 @@
 
 import { Interface, getAddress } from 'ethers';
 
-export const PRANA_CHAIN_ID = 108369;
+export const PRANA_CHAIN_ID = 712217; // PRANA mainnet (alpha 108369 retired)
 
 // Multiply estimated gas by this safety margin (estimateGas can under-report
 // for txs whose gas use depends on state the node can't fully simulate).

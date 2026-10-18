@@ -240,3 +240,21 @@ a { color: var(--link); }
 }
 .nft-collection { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nft-id { flex-shrink: 0; }
+
+/* ---- public mainnet build ---- */
+.small { font-size: 12px; }
+.right { text-align: right; }
+.row-gap { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 8px; }
+.mainnet-notice { line-height: 1.5; }
+.receive-addr {
+  word-break: break-all; background: var(--surface-alt); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px; margin: 8px 0; user-select: all;
+}
+.balance-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+.balance-table td { padding: 6px 4px; border-top: 1px solid var(--border); }
+.link-btn.danger { color: var(--danger); }
+textarea.search-input, select.search-input { width: 100%; box-sizing: border-box; }
+@media (max-width: 640px) {
+  .kv { grid-template-columns: 1fr; }
+  .wallet-grid { grid-template-columns: 1fr !important; }
+}

@@ -108,10 +108,10 @@ export const tokenLink = (base, token) => explorerLink(base, { token });
  */
 export function networkFromMetadata({
   explorerUrl,
-  chainIdHex = '0x1a751', // 108369
+  chainIdHex = '0xade19', // 712217 PRANA mainnet
   name = 'PRANA',
   symbol = 'PRANA',
-  rpcUrl = 'http://127.0.0.1:8545',
+  rpcUrl = 'https://rpc.prana.melek.salon',
 } = {}) {
   const base = normalizeBase(explorerUrl);
   return {

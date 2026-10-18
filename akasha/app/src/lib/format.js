@@ -134,3 +134,32 @@ export function formatGas(v) {
   if (big == null) return '—';
   return big.toLocaleString('en-US');
 }
+
+// Generic ERC-20 unit helpers (token decimals vary: 18 for KULA/WPRANA/wMELEK,
+// 8 for wVKBT/wCURE). Pure bigint string math, same rules as the PRANA helpers.
+export function formatUnits(raw, decimals, maxDecimals = 6) {
+  const w = toWei(raw);
+  if (w == null) return '—';
+  const base = 10n ** BigInt(decimals);
+  const neg = w < 0n;
+  const abs = neg ? -w : w;
+  let out = (abs / base).toString();
+  const frac = abs % base;
+  if (maxDecimals > 0 && frac > 0n) {
+    const f = frac.toString().padStart(decimals, '0').slice(0, maxDecimals).replace(/0+$/, '');
+    if (f.length > 0) out += '.' + f;
+  }
+  return (neg ? '-' : '') + out;
+}
+
+export function parseUnits(input, decimals) {
+  if (typeof input !== 'string') input = String(input ?? '');
+  const s = input.trim();
+  if (s === '' || !/^\d*\.?\d*$/.test(s) || s === '.') {
+    throw new Error(`invalid amount: "${input}"`);
+  }
+  const [wholeStr = '0', fracRaw = ''] = s.split('.');
+  if (fracRaw.length > decimals) throw new Error(`too many decimal places (max ${decimals})`);
+  const frac = (fracRaw + '0'.repeat(decimals)).slice(0, decimals);
+  return BigInt(wholeStr || '0') * 10n ** BigInt(decimals) + BigInt(frac || '0');
+}

@@ -79,7 +79,7 @@ test('buildTx: 1559 chain fills nonce, gasLimit (with 1.2x margin) and fee field
   assert.equal(tx.gasLimit, (21000n * 12n) / 10n); // 25200
   assert.equal(tx.maxFeePerGas, 3_000_000_000n);
   assert.equal(tx.maxPriorityFeePerGas, 1_000_000_000n);
-  assert.equal(tx.chainId, 108369);
+  assert.equal(tx.chainId, 712217);
   assert.equal(tx.value, 1000n);
 });
 

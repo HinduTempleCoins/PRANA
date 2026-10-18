@@ -8,7 +8,9 @@
 // translate that into a typed RpcError({ kind: 'network' }) so the UI can show a
 // graceful "node unreachable" banner instead of crashing.
 
-export const DEFAULT_RPC_URL = 'http://127.0.0.1:8545';
+import { RPC_URL } from './network.js';
+
+export const DEFAULT_RPC_URL = RPC_URL;
 
 export class RpcError extends Error {
   constructor(message, { kind = 'rpc', code, data } = {}) {
