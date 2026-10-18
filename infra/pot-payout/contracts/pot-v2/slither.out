@@ -1,0 +1,74 @@
+Multiple frameworks detected: Foundry, solc, Solc-json. Using Foundry (highest priority). Use --compile-force-framework to override.
+'forge clean' running (wd: /root/prana-payout/contracts)
+'forge config --json' running
+'forge build --build-info --deny never src/PotDistributor.sol' running (wd: /root/prana-payout/contracts)
+INFO:Detectors:
+Detector: incorrect-equality
+PotDistributor._account(address,uint256,bytes32[]) (src/PotDistributor.sol#342-355) uses a dangerous strict equality:
+	- r == bytes32(0) (src/PotDistributor.sol#345)
+PotDistributor._finalizeIfDue() (src/PotDistributor.sol#328-339) uses a dangerous strict equality:
+	- pending.root == bytes32(0) (src/PotDistributor.sol#329)
+PotDistributor.claimable(address,uint256,bytes32[]) (src/PotDistributor.sol#174-185) uses a dangerous strict equality:
+	- active.root == bytes32(0) || ! MerkleProof.verifyCalldata(proof,active.root,leaf(account,cumulative)) (src/PotDistributor.sol#179)
+PotDistributor.finalize() (src/PotDistributor.sol#240-246) uses a dangerous strict equality:
+	- pending.root == bytes32(0) (src/PotDistributor.sol#243)
+PotDistributor.pendingClaimableAt() (src/PotDistributor.sol#187-190) uses a dangerous strict equality:
+	- pending.root == bytes32(0) (src/PotDistributor.sol#188)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#dangerous-strict-equalities
+INFO:Detectors:
+Detector: timestamp
+PotDistributor.claimable(address,uint256,bytes32[]) (src/PotDistributor.sol#174-185) uses timestamp for comparisons
+	Dangerous comparisons:
+	- active.root == bytes32(0) || ! MerkleProof.verifyCalldata(proof,active.root,leaf(account,cumulative)) (src/PotDistributor.sol#179)
+PotDistributor.pendingClaimableAt() (src/PotDistributor.sol#187-190) uses timestamp for comparisons
+	Dangerous comparisons:
+	- pending.root == bytes32(0) (src/PotDistributor.sol#188)
+PotDistributor.finalize() (src/PotDistributor.sol#240-246) uses timestamp for comparisons
+	Dangerous comparisons:
+	- pending.root == bytes32(0) (src/PotDistributor.sol#243)
+PotDistributor._finalizeIfDue() (src/PotDistributor.sol#328-339) uses timestamp for comparisons
+	Dangerous comparisons:
+	- pending.root == bytes32(0) (src/PotDistributor.sol#329)
+	- block.timestamp < uint256(pending.postedAt) + challengePeriod (src/PotDistributor.sol#330)
+	- p.total > receivedTotal() || p.total < active.total (src/PotDistributor.sol#333)
+PotDistributor._account(address,uint256,bytes32[]) (src/PotDistributor.sol#342-355) uses timestamp for comparisons
+	Dangerous comparisons:
+	- r == bytes32(0) (src/PotDistributor.sol#345)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#block-timestamp
+INFO:Detectors:
+Detector: assembly
+PotDistributor._send(address,uint256,uint256) (src/PotDistributor.sol#359-363) uses assembly
+	- INLINE ASM (src/PotDistributor.sol#360-362)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#assembly-usage
+INFO:Detectors:
+Detector: pragma
+2 different versions of Solidity are used:
+	- Version constraint ^0.8.20 is used by:
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/interfaces/IERC5267.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/ShortStrings.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/StorageSlot.sol#5)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/Strings.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/cryptography/ECDSA.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/cryptography/EIP712.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/cryptography/MerkleProof.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/cryptography/MessageHashUtils.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/math/Math.sol#4)
+		-^0.8.20 (lib/openzeppelin-contracts/contracts/utils/math/SignedMath.sol#4)
+	- Version constraint 0.8.24 is used by:
+		-0.8.24 (src/PotDistributor.sol#2)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#different-pragma-directives-are-used
+INFO:Detectors:
+Detector: costly-loop
+PotDistributor._account(address,uint256,bytes32[]) (src/PotDistributor.sol#342-355) has costly operations inside a loop:
+	- totalClaimed += amount (src/PotDistributor.sol#353)
+	Calls stack containing the loop:
+		PotDistributor.claimMany(PotDistributor.Claim[])
+PotDistributor.claimMany(PotDistributor.Claim[]) (src/PotDistributor.sol#276-294) has costly operations inside a loop:
+	- totalClaimed -= amount (src/PotDistributor.sol#288)
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#costly-operations-inside-a-loop
+INFO:Detectors:
+Detector: cyclomatic-complexity
+PotDistributor.postRoot(uint64,bytes32,uint256,bytes32,uint64,bytes[]) (src/PotDistributor.sol#196-236) has a high cyclomatic complexity (12).
+Reference: https://github.com/crytic/slither/wiki/Detector-Documentation#cyclomatic-complexity
+INFO:Slither:src/PotDistributor.sol analyzed (12 contracts with 102 detectors), 15 result(s) found

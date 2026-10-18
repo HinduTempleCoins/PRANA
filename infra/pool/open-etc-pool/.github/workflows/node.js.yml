@@ -1,0 +1,33 @@
+name: Ember Application Build
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install npm and bower dependencies
+        run: |
+          cd www  # Replace with the actual repository directory where your Ember app is located
+          npm install
+          npx bower install --allow-root
+
+      - name: Build Ember application
+        run: |
+          cd www  # Replace with the actual repository directory where your Ember app is located
+          npx ember build
+
+      - name: Display build completion message
+        run: echo "Ember application build completed successfully."

@@ -1,0 +1,8 @@
+{"rpc": "http://127.0.0.1:<archive node port>",
+ "redisHost": "127.0.0.1", "redisPort": 6379, "redisDb": 0, "redisPrefix": "etc",
+ "fleetq": "http://127.0.0.1:<fleetq port>",
+ "shareverify": "<path>/bin/shareverify",
+ "stateDir": "/var/lib/prana-pot/state", "publishDir": "/var/lib/prana-pot/pub",
+ "roundBlocks": 6646, "depth": 64,
+ "exclusions": [],
+ "params": "<same params object as signer.mainnet.example.json>"}

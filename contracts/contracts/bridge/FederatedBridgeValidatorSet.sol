@@ -128,6 +128,13 @@ contract FederatedBridgeValidatorSet is AccessControl, IBridgeValidatorSet {
         return _threshold;
     }
 
+    /// @notice Alias of {threshold} named for the bridge's IBridgeValidatorSet (BI7) which reads
+    ///         the K-of-N quorum via `quorum()`. Same value as `threshold()`; added so
+    ///         GrapheneDepositBridge._quorum() resolves against this set (was missing → attest reverted).
+    function quorum() external view returns (uint256) {
+        return _threshold;
+    }
+
     /// @inheritdoc IBridgeValidatorSet
     function validatorCount() public view returns (uint256) {
         return _validators.length();

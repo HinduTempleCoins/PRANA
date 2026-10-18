@@ -1,0 +1,13 @@
+[Unit]
+Description=PRANA pot signer (DRAFT — not installed; one per independent box, with its own archive PRANA node)
+After=network-online.target
+[Service]
+ExecStart=/root/prana-payout/venv/bin/python /root/prana-payout/payout/signer.py /etc/prana-pot/signer.json --loop 60
+Restart=always
+RestartSec=10
+Nice=10
+# keystore + password file referenced in signer.json, mode 0600, never in a repo
+ProtectSystem=strict
+ReadWritePaths=/var/lib/prana-pot-signer
+[Install]
+WantedBy=multi-user.target

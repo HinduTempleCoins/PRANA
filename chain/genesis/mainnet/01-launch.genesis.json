@@ -1,0 +1,41 @@
+{
+  "_STAGED": "PRANA MAINNET fair-launch genesis \u2014 STAGED 2026-08-19, NOT yet launched. Mirrors the testnet (chain/genesis/prana.genesis.json) with the mainnet changes: NO premine (empty alloc), a distinct chainId, Etchash (ECIP-1099), and the hathorFee DevCoin fee. OPERATOR must confirm the two \u26a0 values before genesis, then this file seals the chain permanently.",
+  "config": {
+    "chainId": 712217,
+    "_chainId_note": "\u2705 OPERATOR-CONFIRMED mainnet chainId 712217 (2026-08-21) \u2014 verified unused on chainid.network, differs from testnet 108369. Register at chainlist to claim. Sets the genesis hash + wallet network.",
+    "homesteadBlock": 0,
+    "eip150Block": 0,
+    "eip155Block": 0,
+    "eip158Block": 0,
+    "byzantiumBlock": 0,
+    "constantinopleBlock": 0,
+    "petersburgBlock": 0,
+    "istanbulBlock": 0,
+    "berlinBlock": 0,
+    "londonBlock": 0,
+    "ethash": {},
+    "ecip1099FBlock": 0,
+    "_etchash_note": "ethash + ecip1099FBlock:0 = Etchash (ECIP-1099 'Thanos') from block 0 \u2014 the pinned testnet decision (low-VRAM/laptop-friendly). No RandomX.",
+    "hathorFee": {
+      "_comment": "Consensus-enforced protocol fee on block issuance (DevCoin model): a share of each block's reward is routed to feeAddress (the HathorFeeTreasury) which splits it per the DAO-governed weights. feeBps in basis points.",
+      "feeBps": 200,
+      "_feeBps_note": "\u2705 OPERATOR-CONFIRMED 2026-08-24: DevCoin pool-dev fee = 200 (2.00%) \u2014 Hathor's cut from every block, like a pool dev. Chosen over 3%/5% as the competitive pool-fee sweet spot (still real at scale, low enough to draw miners). SEALED at genesis. The HASH:TASK split beyond it is dynamic via HashTaskWeightConfig.",
+      "feeAddress": "0xF129608bF3BA681012CF82DFfCfBB92563df987e",
+      "_feeAddress_note": "MUST be set to the deployed HathorFeeTreasury address at genesis-prep (non-zero) OR use a pre-computed deterministic deploy address. Zero here is a placeholder.",
+      "activationBlock": 5000
+    },
+    "ecip1017FBlock": 10000,
+    "ecip1017EraRounds": 2427507,
+    "_ecip1017_note": "PRANA 10%/yr emission decay: retuned ECIP-1017 (9/10 per era, base=2 PRANA). Activates blk 10000; era=1yr."
+  },
+  "nonce": "0x0000000000000042",
+  "timestamp": "0x0",
+  "extraData": "0x417474656e74696f6e20497320416c6c20596f75204e6565642031322f4a756e2f32303137207c204f70656e4149204750542d332031312f4a756e2f32303230207c20537461626c6520446966667573696f6e2032322f4175672f32303232207c204f70656e414920496e74726f647563696e6720436861744750542033302f4e6f762f32303232207c204d657461204c4c614d412032342f4665622f32303233207c204f70656e4149204750542d342031342f4d61722f32303233207c20416e7468726f70696320436c617564652031342f4d61722f32303233207c204d69737472616c2037422032372f5365702f32303233207c207841492047726f6b2030342f4e6f762f32303233207c20476f6f676c652047656d696e692030362f4465632f32303233207c2047726f71204c505520496e666572656e636520456e67696e652030392f4a616e2f32303234207c20446565705365656b2d52312032302f4a616e2f32303235207c205052414e412066616972206c61756e6368206e6f207072656d696e652032392f4175672f3230323620e2809420636f6d70757465207468652070656f706c65206f776e",
+  "_extraData_ascii": "PRANA mainnet - fair launch - Van Kush",
+  "gasLimit": "0x1c9c380",
+  "difficulty": "0x20000",
+  "_difficulty_note": "Low launch difficulty (below testnet 0x80000) so laptops mine Etchash day 1 (natural fair-launch bootstrap); the chain retargets up as hashrate joins.",
+  "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+  "coinbase": "0x0000000000000000000000000000000000000000",
+  "alloc": {}
+}

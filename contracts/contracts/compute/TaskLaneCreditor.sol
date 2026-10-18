@@ -5,6 +5,7 @@ import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {IUnifiedSharesLedger} from "../interfaces/IUnifiedSharesLedger.sol";
 import {ITaskRegistry} from "../interfaces/ITaskRegistry.sol";
 import {IWorkerBeacon} from "../interfaces/IWorkerBeacon.sol";
+import {ICoordinatorRegistry} from "../interfaces/ICoordinatorRegistry.sol";
 import {ITaskVerificationGate} from "./TaskVerificationGate.sol";
 
 /// @title TaskLaneCreditor (backlog NN3)
@@ -29,7 +30,16 @@ contract TaskLaneCreditor is AccessControl {
     /// @notice Optional worker-eligibility oracle; zero address disables the bind check.
     IWorkerBeacon public beacon;
 
+    /// @notice Optional permissionless-coordinator allowlist (PR1). When set (nonzero), the caller
+    ///         (the coordinator key holding CREDITOR_ROLE) must additionally be a bonded, active,
+    ///         unslashed coordinator here before it can credit a TASK share. Zero address = open
+    ///         mode = credit gated by CREDITOR_ROLE alone (the pre-PR1, DAO-granted-role default).
+    ///         This is the wiring that makes the coordinator's slashable bond a live precondition of
+    ///         TASK credit rather than an unchecked, architecturally-staged rail.
+    ICoordinatorRegistry public coordinatorRegistry;
+
     event BeaconSet(address indexed beacon);
+    event CoordinatorRegistrySet(address indexed coordinatorRegistry);
     event TaskCredited(
         bytes32 indexed claimId,
         bytes32 indexed taskId,
@@ -74,6 +84,14 @@ contract TaskLaneCreditor is AccessControl {
         emit BeaconSet(address(beacon_));
     }
 
+    /// @notice Admin can wire/unwire the permissionless CoordinatorRegistry after deploy. When set,
+    ///         every creditVerified() caller must be a bonded, active coordinator (PR1). Setting it
+    ///         to the zero address returns the lane to open mode (CREDITOR_ROLE-only gating).
+    function setCoordinatorRegistry(ICoordinatorRegistry registry_) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        coordinatorRegistry = registry_;
+        emit CoordinatorRegistrySet(address(registry_));
+    }
+
     /// @notice Settle one verified task completion into the TASK lane.
     /// @param claimId The verification claim (must be verified and not yet consumed in the gate).
     /// @param taskId The task-type whose governed shareWeight to apply.
@@ -87,6 +105,14 @@ contract TaskLaneCreditor is AccessControl {
         onlyRole(CREDITOR_ROLE)
     {
         if (baseShares == 0) revert ZeroBaseShares();
+
+        // (0) permissionless-coordinator gate (PR1): when a registry is wired, the caller must be a
+        //     bonded, active, unslashed coordinator. Cheap revert before any state change. Zero
+        //     registry = open mode (CREDITOR_ROLE alone), preserving the pre-PR1 behavior.
+        {
+            ICoordinatorRegistry reg = coordinatorRegistry;
+            if (address(reg) != address(0)) reg.requireActiveCoordinator(msg.sender);
+        }
 
         // (1) one-shot pull of the verified verdict; reverts unless verified & not consumed.
         address worker = gate.consume(claimId);

@@ -5,6 +5,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 
 import {IBridgeValidatorSet} from "./IBridgeValidatorSet.sol";
 
@@ -53,13 +54,15 @@ interface IWrappedEcosystemTokenMint {
 ///          its `wrappedOf[originRef]` is the off-chain map admin mirrors into {registerToken} here.
 ///        Withdrawals pull the wrapper in and burn it (it is {ERC20Burnable}), emitting
 ///        {GrapheneWithdrawal} for the off-chain relayer to release native MELEK on the source chain.
-contract GrapheneDepositBridge is AccessControl, ReentrancyGuard {
+contract GrapheneDepositBridge is AccessControl, ReentrancyGuard, Pausable {
     using SafeERC20 for IERC20;
 
     /// @notice Admin manages the token registry, validator-set wiring and quorum.
     bytes32 public constant ADMIN_ROLE = keccak256("BRIDGE_ADMIN_ROLE");
     /// @notice Built-in attester set (used only when `validatorSet == address(0)`).
     bytes32 public constant ATTESTER_ROLE = keccak256("ATTESTER_ROLE");
+    /// @notice Audit M2: may {pause}/{unpause} the mint (attest) and withdraw (burn) paths.
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
     /// @notice External federated validator set (BI1). address(0) ⇒ use the built-in ATTESTER_ROLE.
     IBridgeValidatorSet public validatorSet;
@@ -75,6 +78,23 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard {
 
     /// @notice depositRef (Graphene tx id / sequence) => already minted. One mint per ref, ever.
     mapping(bytes32 => bool) public depositProcessed;
+
+    /// @notice Audit (daily mint cap): tokenId => max wrapped amount mintable per rolling 24h
+    ///         window. 0 == uncapped (default), so the cap is opt-in and never bricks existing
+    ///         behaviour until an admin sets it. A tumbling 24h window (reset on first mint after
+    ///         expiry) is used -- the standard cheap on-chain approximation of a rolling window.
+    mapping(bytes32 => uint256) public dailyMintCap;
+    /// @notice tokenId => start timestamp of the current 24h mint window.
+    mapping(bytes32 => uint256) private _mintWindowStart;
+    /// @notice tokenId => amount already minted in the current window.
+    mapping(bytes32 => uint256) private _mintedInWindow;
+
+    /// @notice tokenId => LOCK_RELEASE (pooled) mode. When true the bridge holds a PRE-FUNDED pool
+    ///         of the wrapper and RELEASES from it on deposit / LOCKS it back on withdraw, and NEVER
+    ///         mints or burns. Set once at registration; immutable. This removes mint authority as an
+    ///         attack surface entirely: wrapped supply is fixed at the pool, so no bug and no
+    ///         compromised quorum can inflate supply beyond the real backing (max loss = the pool).
+    mapping(bytes32 => bool) public lockReleaseMode;
 
     struct Deposit {
         bytes32 tokenId; // ecosystem token id being minted
@@ -95,7 +115,11 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard {
     // --- events ------------------------------------------------------------ //
     event ValidatorSetUpdated(address indexed validatorSet);
     event LocalQuorumUpdated(uint256 quorum);
+    event DepositReset(bytes32 indexed depositRef);
+    event DailyMintCapUpdated(bytes32 indexed tokenId, uint256 cap);
+    event DepositDeferredByCap(bytes32 indexed depositRef, bytes32 indexed tokenId, uint256 amount, uint256 cap);
     event TokenRegistered(bytes32 indexed tokenId, address indexed wrapped);
+    event LockReleaseModeSet(bytes32 indexed tokenId, address indexed wrapped);
     event TokenUnregistered(bytes32 indexed tokenId, address indexed wrapped);
     event DepositAttested(
         bytes32 indexed depositRef,
@@ -134,6 +158,8 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard {
     error AttestationMismatch(bytes32 depositRef);
     error BadQuorum();
     error NoQuorumConfigured();
+    error DailyMintCapExceeded(bytes32 tokenId, uint256 windowMinted, uint256 cap, uint256 amount);
+    error QuorumNotReached(bytes32 depositRef);
 
     /// @param admin_  Receives DEFAULT_ADMIN_ROLE + ADMIN_ROLE (manages registry, set, quorum).
     /// @param validatorSet_ Optional external {IBridgeValidatorSet} (BI1). Pass address(0) to start
@@ -142,6 +168,7 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard {
         if (admin_ == address(0)) revert ZeroAddress();
         _grantRole(DEFAULT_ADMIN_ROLE, admin_);
         _grantRole(ADMIN_ROLE, admin_);
+        _grantRole(PAUSER_ROLE, admin_);
         // ADMIN_ROLE also administers the built-in ATTESTER_ROLE set.
         _setRoleAdmin(ATTESTER_ROLE, ADMIN_ROLE);
         if (validatorSet_ != address(0)) {
@@ -168,14 +195,49 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard {
         emit LocalQuorumUpdated(quorum_);
     }
 
+    /// @notice Set the rolling-24h mint cap for a token id (0 = uncapped). Audit hardening: bounds
+    ///         the blast radius of an attester compromise -- a colluding quorum can mint at most
+    ///         `cap` per token per 24h before minting halts until the window rolls.
+    function setDailyMintCap(bytes32 tokenId, uint256 cap) external onlyRole(ADMIN_ROLE) {
+        dailyMintCap[tokenId] = cap;
+        emit DailyMintCapUpdated(tokenId, cap);
+    }
+
+    /// @notice Audit M2 (emergency stop): halt inbound minting and outbound burning. Views and
+    ///         admin registry ops stay live. Pausing is a mitigation for a suspected attester
+    ///         compromise while the federation is rotated.
+    function pause() external onlyRole(PAUSER_ROLE) {
+        _pause();
+    }
+
+    /// @notice Resume after {pause}.
+    function unpause() external onlyRole(PAUSER_ROLE) {
+        _unpause();
+    }
+
     /// @notice Register the PRANA-side wrapper for an ecosystem token id (mirror of
     ///         {WrappedTokenFactory.wrappedOf}). One wrapper per id; re-register is rejected.
     function registerToken(bytes32 tokenId, address wrapped) external onlyRole(ADMIN_ROLE) {
+        _registerToken(tokenId, wrapped, false);
+    }
+
+    /// @notice Register a wrapper in LOCK_RELEASE (pooled) mode: the bridge releases from a
+    ///         pre-funded pool and NEVER mints. After registering, fund the bridge with the wrapper
+    ///         and revoke the bridge's mint authority on it for the full no-mint-authority guarantee.
+    function registerTokenPooled(bytes32 tokenId, address wrapped) external onlyRole(ADMIN_ROLE) {
+        _registerToken(tokenId, wrapped, true);
+    }
+
+    function _registerToken(bytes32 tokenId, address wrapped, bool lockRelease) internal {
         if (tokenId == bytes32(0)) revert ZeroRef();
         if (wrapped == address(0)) revert ZeroAddress();
         address existing = wrappedToken[tokenId];
         if (existing != address(0)) revert TokenAlreadyRegistered(tokenId, existing);
         wrappedToken[tokenId] = wrapped;
+        if (lockRelease) {
+            lockReleaseMode[tokenId] = true;
+            emit LockReleaseModeSet(tokenId, wrapped);
+        }
         emit TokenRegistered(tokenId, wrapped);
     }
 
@@ -186,6 +248,27 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard {
         if (existing == address(0)) revert TokenNotRegistered(tokenId);
         delete wrappedToken[tokenId];
         emit TokenUnregistered(tokenId, existing);
+    }
+
+    /// @notice Clear the in-flight attestation tally for a NOT-YET-MINTED deposit ref, so honest
+    ///         attesters can re-form quorum on the correct (tokenId, recipient, amount) tuple.
+    /// @dev    Audit M1 (poisoned-deposit DoS): the FIRST {attestDeposit} for a `depositRef` locks
+    ///         its tuple; a single buggy or malicious first attester therefore bricks a real deposit
+    ///         forever, because every honest attester reporting the true tuple reverts with
+    ///         {AttestationMismatch} and the ref can never reach quorum. This admin escape hatch is
+    ///         the LOWER-RISK fix vs. re-keying the tally by tuple hash: it is purely additive, never
+    ///         touches the mint hot path, and adds NO new trust (ADMIN_ROLE already controls the
+    ///         registry, validator set and quorum, i.e. can already authorise mints). It can never
+    ///         erase a completed mint or enable a replay: `depositProcessed[depositRef]` is set only
+    ///         on mint, is checked here, and is itself never cleared -- a minted ref stays spent.
+    ///         Honest attesters revert BEFORE `_attested` is written, so they remain free to attest
+    ///         after the reset; only the attester(s) who recorded the poisoned tuple stay marked for
+    ///         this ref (they attested a now-void tuple), which is acceptable.
+    function resetDeposit(bytes32 depositRef) external onlyRole(ADMIN_ROLE) {
+        if (depositRef == bytes32(0)) revert ZeroRef();
+        if (depositProcessed[depositRef]) revert DepositAlreadyProcessed(depositRef);
+        delete _deposits[depositRef];
+        emit DepositReset(depositRef);
     }
 
     // ===================================================================== //
@@ -204,7 +287,7 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard {
         bytes32 tokenId,
         address recipient,
         uint256 amount
-    ) external nonReentrant {
+    ) external nonReentrant whenNotPaused {
         if (depositRef == bytes32(0)) revert ZeroRef();
         if (recipient == address(0)) revert ZeroAddress();
         if (amount == 0) revert ZeroAmount();
@@ -238,10 +321,51 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard {
         emit DepositAttested(depositRef, tokenId, msg.sender, recipient, amount, count, required);
 
         if (count >= required && !d.minted) {
-            d.minted = true;
-            depositProcessed[depositRef] = true;
-            IWrappedEcosystemTokenMint(wrapped).mint(recipient, amount, depositRef);
-            emit DepositMinted(depositRef, tokenId, recipient, wrapped, amount);
+            // Audit (daily mint cap): if this mint would breach the 24h cap we must NOT revert --
+            // reverting would roll back this attester's vote, so quorum could never be recorded and
+            // the deposit would be permanently stuck. Instead leave it un-minted with quorum on
+            // record; anyone can call {finalizeDeposit} once the window frees headroom.
+            if (_tryConsumeDailyCap(tokenId, amount)) {
+                d.minted = true;
+                depositProcessed[depositRef] = true;
+                _credit(tokenId, wrapped, recipient, amount, depositRef);
+                emit DepositMinted(depositRef, tokenId, recipient, wrapped, amount);
+            } else {
+                emit DepositDeferredByCap(depositRef, tokenId, amount, dailyMintCap[tokenId]);
+            }
+        }
+    }
+
+    /// @notice Complete a deposit whose quorum was already reached but whose mint was DEFERRED
+    ///         because it would have breached {dailyMintCap} at quorum time. Permissionless and
+    ///         safe: it can only mint the exact tuple already agreed by K attesters, exactly once,
+    ///         and only once the tumbling window has freed enough headroom. Without this, a
+    ///         cap-deferred deposit (all K attesters already spent) would be stranded because the
+    ///         mint only re-triggers on a NEW attestation.
+    function finalizeDeposit(bytes32 depositRef) external nonReentrant whenNotPaused {
+        if (depositProcessed[depositRef]) revert DepositAlreadyProcessed(depositRef);
+        Deposit storage d = _deposits[depositRef];
+        if (d.count < _quorum()) revert QuorumNotReached(depositRef);
+        address wrapped = wrappedToken[d.tokenId];
+        if (wrapped == address(0)) revert TokenNotRegistered(d.tokenId);
+        _consumeDailyCap(d.tokenId, d.amount);
+        d.minted = true;
+        depositProcessed[depositRef] = true;
+        _credit(d.tokenId, wrapped, d.recipient, d.amount, depositRef);
+        emit DepositMinted(depositRef, d.tokenId, d.recipient, wrapped, d.amount);
+    }
+
+    /// @dev Credit the recipient with wrapped tokens. In LOCK_RELEASE (pooled) mode: RELEASE from
+    ///      the bridge's pre-funded pool (a shortfall reverts — it means the whole backing is already
+    ///      bridged out, which cannot happen with a correctly sized pool). Else: MINT. The pooled path
+    ///      never touches mint authority, so no fake-mint can ever inflate wrapped supply.
+    function _credit(bytes32 tokenId, address wrapped, address recipient, uint256 amount, bytes32 ref)
+        internal
+    {
+        if (lockReleaseMode[tokenId]) {
+            IERC20(wrapped).safeTransfer(recipient, amount);
+        } else {
+            IWrappedEcosystemTokenMint(wrapped).mint(recipient, amount, ref);
         }
     }
 
@@ -259,6 +383,7 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard {
     function withdraw(bytes32 tokenId, uint256 amount, bytes32 destinationRef)
         external
         nonReentrant
+        whenNotPaused
         returns (uint256 nonce)
     {
         if (amount == 0) revert ZeroAmount();
@@ -266,10 +391,13 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard {
         if (wrapped == address(0)) revert TokenNotRegistered(tokenId);
 
         nonce = withdrawalNonce++;
-        // Pull the wrapper in, then burn this bridge's own balance. The wrapper is {ERC20Burnable};
-        // burning our own held balance keeps the burn independent of any allowance edge cases.
+        // Pull the wrapper in. In LOCK_RELEASE (pooled) mode it STAYS in the pool — locked, recycled
+        // for the next deposit — so we never burn. In mint/burn mode we burn our own held balance
+        // (the wrapper is {ERC20Burnable}; burning our own balance avoids allowance edge cases).
         IERC20(wrapped).safeTransferFrom(msg.sender, address(this), amount);
-        IBurnable(wrapped).burn(amount);
+        if (!lockReleaseMode[tokenId]) {
+            IBurnable(wrapped).burn(amount);
+        }
 
         emit GrapheneWithdrawal(nonce, tokenId, msg.sender, wrapped, amount, destinationRef);
     }
@@ -285,7 +413,7 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard {
         return hasRole(ATTESTER_ROLE, account);
     }
 
-    /// @notice The current K threshold under the configured set (external `quorum()` or `localQuorum`).
+    /// @notice The current K threshold under the configured set (external `threshold()` or `localQuorum`).
     function requiredQuorum() external view returns (uint256) {
         return _quorum();
     }
@@ -309,16 +437,39 @@ contract GrapheneDepositBridge is AccessControl, ReentrancyGuard {
     //                              INTERNAL
     // ===================================================================== //
 
+    /// @dev Account the tumbling-24h mint cap for `tokenId`. Returns false (writing nothing) when
+    ///      the mint would breach the cap, so callers can choose to defer rather than revert.
+    ///      Always true when uncapped (cap == 0).
+    function _tryConsumeDailyCap(bytes32 tokenId, uint256 amount) internal returns (bool) {
+        uint256 cap = dailyMintCap[tokenId];
+        if (cap == 0) return true; // uncapped
+        uint256 windowMinted = _mintedInWindow[tokenId];
+        bool rolled = block.timestamp >= _mintWindowStart[tokenId] + 1 days;
+        if (rolled) windowMinted = 0; // a fresh 24h window's worth of headroom
+        if (windowMinted + amount > cap) return false;
+        if (rolled) _mintWindowStart[tokenId] = block.timestamp;
+        _mintedInWindow[tokenId] = windowMinted + amount;
+        return true;
+    }
+
+    /// @dev Reverting form of {_tryConsumeDailyCap}, for callers with no defer path.
+    function _consumeDailyCap(bytes32 tokenId, uint256 amount) internal {
+        if (!_tryConsumeDailyCap(tokenId, amount)) {
+            revert DailyMintCapExceeded(tokenId, _mintedInWindow[tokenId], dailyMintCap[tokenId], amount);
+        }
+    }
+
     function _requireAttester(address account) internal view {
         if (!isAttester(account)) revert NotAnAttester(account);
     }
 
-    /// @dev External validator set's `quorum()` if wired, else the built-in `localQuorum`. Reverts if
+    /// @dev External validator set's `threshold()` if wired, else the built-in `localQuorum`. Reverts if
     ///      neither yields a usable (>0) threshold so a deposit can never auto-mint on a single
-    ///      attestation by accident.
+    ///      attestation by accident. (`threshold()` is the selector the real {FederatedBridgeValidatorSet}
+    ///      exposes — calling the old `quorum()` reverted against it, DoSing inbound deposits.)
     function _quorum() internal view returns (uint256 q) {
         IBridgeValidatorSet vs = validatorSet;
-        q = address(vs) != address(0) ? vs.quorum() : localQuorum;
+        q = address(vs) != address(0) ? vs.threshold() : localQuorum;
         if (q == 0) revert NoQuorumConfigured();
     }
 }

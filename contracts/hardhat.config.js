@@ -44,7 +44,26 @@ module.exports = {
     },
   },
   gasReporter: GAS_REPORTER,
+  etherscan: {
+    apiKey: { prana_mainnet: "blockscout" },
+    customChains: [
+      {
+        network: "prana_mainnet",
+        chainId: 712217,
+        urls: {
+          apiURL: "https://pranascan.soapbox.community/api",
+          browserURL: "https://pranascan.soapbox.community",
+        },
+      },
+    ],
+  },
+
   networks: {
+    prana_mainnet: {
+      url: process.env.PRANA_RPC || "http://127.0.0.1:8557",
+      chainId: 712217,
+      accounts: DEPLOYER,
+    },
     hardhat: {},
     prana_local: {
       url: process.env.PRANA_RPC || "http://127.0.0.1:8545",

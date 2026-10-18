@@ -1,0 +1,5 @@
+{"rpc": "http://127.0.0.1:<node port>",
+ "key": {"keystore": "/etc/prana-pot/<relayer keystore>.json", "passwordFile": "/etc/prana-pot/<relayer>.pass"},
+ "publishUrl": "https://<pool host>/pot",
+ "signerSigUrls": ["https://<signer-1 host>/sigs", "https://<signer-2 host>/sigs", "https://<signer-3 host>/sigs"],
+ "params": "<same params object as signer.mainnet.example.json>"}

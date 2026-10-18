@@ -1,0 +1,10 @@
+[Unit]
+Description=PRANA pot relay (DRAFT — not installed)
+After=network-online.target
+[Service]
+ExecStart=/root/prana-payout/venv/bin/python /root/prana-payout/payout/relay.py /etc/prana-pot/relay.json --loop 60
+Restart=always
+RestartSec=10
+Nice=10
+[Install]
+WantedBy=multi-user.target

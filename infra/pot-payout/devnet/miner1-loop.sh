@@ -1,0 +1,1 @@
+while true; do nice -n 15 /root/prana-payout/bin/devminer -pool 127.0.0.1:8018 -bind 127.0.0.1 -login 0xae78e3EC25122e89Fa2699e0F7c0142e2C5d4b8f -worker rig1 -threads 3 >> /root/prana-payout/devnet/logs/miner1.log 2>&1; echo '{"event":"miner1-restart"}' >> /root/prana-payout/devnet/logs/miner1.log; sleep 2; done
