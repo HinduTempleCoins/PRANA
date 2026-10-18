@@ -75,7 +75,7 @@ test('eth_accounts is empty before connect (no prompt)', async () => {
 
 test('net_version returns decimal chain id', async () => {
   const { provider } = makeProvider();
-  assert.equal(await provider.request({ method: 'net_version' }), '108369');
+  assert.equal(await provider.request({ method: 'net_version' }), '712217');
 });
 
 // --- permission deny --------------------------------------------------------
@@ -221,7 +221,7 @@ test('wallet_switchEthereumChain case-insensitive match', async () => {
   assert.equal(
     await provider.request({
       method: 'wallet_switchEthereumChain',
-      params: [{ chainId: '0x1A751' }],
+      params: [{ chainId: '0xADE19' }],
     }),
     null,
   );

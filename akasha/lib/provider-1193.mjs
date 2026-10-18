@@ -23,8 +23,8 @@
 import { getAddress } from 'ethers';
 
 // PRANA local chain — single-chain wallet for now.
-export const PRANA_CHAIN_ID_HEX = '0x1a751'; // 108369
-export const PRANA_CHAIN_ID_DEC = 108369;
+export const PRANA_CHAIN_ID_HEX = '0xade19'; // 712217 PRANA mainnet
+export const PRANA_CHAIN_ID_DEC = 712217;
 
 // ---------------------------------------------------------------------------
 // EIP-1193 provider errors (with the standard `.code` field dapps switch on).
@@ -346,7 +346,7 @@ export class WalletProvider extends TinyEmitter {
         'wallet_switchEthereumChain expects [{ chainId }].',
       );
     }
-    // Normalize for comparison (accept 0x1A751 / 0x1a751).
+    // Normalize for comparison (accept 0xADE19 / 0xade19).
     if (targetId.toLowerCase() === this._chainIdHex.toLowerCase()) {
       // Already on PRANA — succeed. (Per EIP-3326 a successful switch returns null.)
       return null;

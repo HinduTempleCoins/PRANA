@@ -1,12 +1,21 @@
 # Akasha — PRANA wallet + explorer (Vite + React)
 
-A private, local-only dev app: the consumer-facing gateway to the PRANA chain.
-One Vite + React app, three tabbed views (no router).
+The public, self-custody PRANA mainnet wallet (live at akasha.soapbox.community).
+One Vite + React app, tabbed views (no router).
 
-- **Chain:** PRANA · chainId `108369` (`0x1a751`)
-- **RPC:** `http://127.0.0.1:8545` (the local core-geth dev node)
-- **Scope:** local dev only. The "DEV WALLET" badge is shown everywhere — never
-  store real value here.
+- **Chain:** PRANA mainnet · chainId `712217` (`0xade19`) — pinned in `src/lib/network.js`;
+  every tx is EIP-155 signed for it and the wallet refuses to sign if the RPC reports another id.
+- **RPC:** `https://rpc.prana.melek.salon` · **Explorer:** PRANAScan · **DEX:** kula.money
+- **Tokens:** KULA / WPRANA / wMELEK (18 dp), wVKBT / wCURE (8 dp) — `src/lib/network.js`.
+- **Tabs in the public build:** Wallet, Explorer, Network. The NFT / Mint / Market / Packs / Burn
+  views are bound to alpha/fixture contracts and are not mounted until their contracts exist on 712217.
+
+## Deploy (public build)
+
+`npm run build` → `dist/`. The build injects a CSP `<meta>` (connect-src = the PRANA RPC only, no
+third-party script/style/font/img). The web server must ALSO send, on every response:
+`Content-Security-Policy` (same policy + `frame-ancestors 'none'`), `X-Frame-Options: DENY`,
+`Referrer-Policy: no-referrer`, `Cache-Control: no-cache` on `index.html`.
 
 ## Quick start
 

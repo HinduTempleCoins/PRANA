@@ -4,7 +4,15 @@ import { useEffect, useState } from 'react';
 import { networkFromMetadata } from '../lib/wallet.js';
 import { isNetworkError } from '../lib/rpc.js';
 
-const NET = networkFromMetadata({ explorerUrl: 'http://127.0.0.1:5173' });
+import { CHAIN_ID_HEX, CHAIN_NAME, NATIVE_SYMBOL, RPC_URL, EXPLORER_URL } from '../lib/network.js';
+
+const NET = networkFromMetadata({
+  explorerUrl: EXPLORER_URL,
+  chainIdHex: CHAIN_ID_HEX,
+  name: CHAIN_NAME,
+  symbol: NATIVE_SYMBOL,
+  rpcUrl: RPC_URL,
+});
 
 export default function AboutView({ rpc }) {
   const [chainId, setChainId] = useState(null);
@@ -47,8 +55,7 @@ export default function AboutView({ rpc }) {
         </h3>
         {status === 'offline' && (
           <p className="muted">
-            No node at <code>{rpc.url}</code>. Start it with{' '}
-            <code>chain/scripts/run-miner.sh</code>; this view auto-reconnects.
+            Cannot reach <code>{rpc.url}</code> right now; this view auto-reconnects.
           </p>
         )}
         <dl className="kv">

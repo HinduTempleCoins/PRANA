@@ -76,10 +76,10 @@ test('requires exactly one target key', () => {
 
 test('networkFromMetadata builds an add-chain config with PRANA defaults', () => {
   const cfg = networkFromMetadata({ explorerUrl: 'https://explorer.prana.network/' });
-  assert.equal(cfg.chainId, '0x1a751');
+  assert.equal(cfg.chainId, '0xade19');
   assert.equal(cfg.chainName, 'PRANA');
   assert.equal(cfg.nativeCurrency.symbol, 'PRANA');
   assert.equal(cfg.nativeCurrency.decimals, 18);
   assert.deepEqual(cfg.blockExplorerUrls, ['https://explorer.prana.network']); // slash stripped
-  assert.deepEqual(cfg.rpcUrls, ['http://127.0.0.1:8545']);
+  assert.deepEqual(cfg.rpcUrls, ['https://rpc.prana.melek.salon']);
 });

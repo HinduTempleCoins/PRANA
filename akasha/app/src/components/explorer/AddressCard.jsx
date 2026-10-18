@@ -4,6 +4,7 @@ import { mapAddressInfo } from '../../lib/rpcMappers.js';
 import { formatPranaWithSymbol, truncateAddress } from '../../lib/format.js';
 import { isNetworkError } from '../../lib/rpc.js';
 import { ConnBanner } from './BlockList.jsx';
+import Balances from '../TokenBalances.jsx';
 
 // `address` is required. Looks up balance, code (EOA vs contract), and tx count.
 export default function AddressCard({ rpc, address }) {
@@ -49,6 +50,7 @@ export default function AddressCard({ rpc, address }) {
         <dt>Tx count (nonce)</dt>
         <dd>{info.txCount ?? '—'}</dd>
       </dl>
+      <Balances rpc={rpc} address={info.address} />
     </div>
   );
 }
