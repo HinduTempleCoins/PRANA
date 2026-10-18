@@ -205,4 +205,256 @@ describe("GrapheneDepositBridge", function () {
       ).to.be.revertedWithCustomError(bridge, "NotAnAttester");
     });
   });
+
+  // Audit M1: the FIRST attestation locks a ref's tuple, so one bad first attester can brick a
+  // real deposit forever. resetDeposit clears a NOT-YET-MINTED tally so honest attesters can
+  // re-form quorum on the true tuple — without ever letting a minted ref be replayed.
+  describe("resetDeposit (poisoned-deposit escape hatch)", function () {
+    it("lets honest attesters re-form quorum on the true tuple after a poisoned first attestation", async () => {
+      const ref = ethers.id("poisoned-1");
+
+      // a3 poisons the ref with the wrong recipient/amount.
+      await bridge.connect(a3).attestDeposit(ref, MELEK_ID, outsider.address, 999n);
+      // Honest attesters reporting the TRUE tuple are locked out.
+      await expect(
+        bridge.connect(a1).attestDeposit(ref, MELEK_ID, user.address, 100n)
+      ).to.be.revertedWithCustomError(bridge, "AttestationMismatch");
+
+      await expect(bridge.connect(admin).resetDeposit(ref))
+        .to.emit(bridge, "DepositReset")
+        .withArgs(ref);
+
+      // Now the true tuple reaches quorum and mints.
+      await bridge.connect(a1).attestDeposit(ref, MELEK_ID, user.address, 100n);
+      await expect(bridge.connect(a2).attestDeposit(ref, MELEK_ID, user.address, 100n))
+        .to.emit(bridge, "DepositMinted")
+        .withArgs(ref, MELEK_ID, user.address, await wMelek.getAddress(), 100n);
+      expect(await wMelek.balanceOf(user.address)).to.equal(100n);
+    });
+
+    it("cannot reset a minted ref (no replay) and rejects a zero ref", async () => {
+      const ref = ethers.id("minted-1");
+      await bridge.connect(a1).attestDeposit(ref, MELEK_ID, user.address, 10n);
+      await bridge.connect(a2).attestDeposit(ref, MELEK_ID, user.address, 10n);
+
+      await expect(
+        bridge.connect(admin).resetDeposit(ref)
+      ).to.be.revertedWithCustomError(bridge, "DepositAlreadyProcessed");
+      await expect(
+        bridge.connect(admin).resetDeposit(ZERO_HASH)
+      ).to.be.revertedWithCustomError(bridge, "ZeroRef");
+      expect(await wMelek.balanceOf(user.address)).to.equal(10n);
+    });
+
+    it("only admin can reset", async () => {
+      await expect(
+        bridge.connect(outsider).resetDeposit(ethers.id("x"))
+      ).to.be.revertedWithCustomError(bridge, "AccessControlUnauthorizedAccount");
+    });
+  });
+
+  // Audit M2: an emergency stop for a suspected attester compromise. Halts mint + burn; admin
+  // registry ops and views stay live so the federation can be rotated while paused.
+  describe("pause (emergency stop)", function () {
+    it("halts attestation and resumes cleanly", async () => {
+      await bridge.connect(admin).pause();
+      await expect(
+        bridge.connect(a1).attestDeposit(ethers.id("p-1"), MELEK_ID, user.address, 5n)
+      ).to.be.revertedWithCustomError(bridge, "EnforcedPause");
+
+      await bridge.connect(admin).unpause();
+      await bridge.connect(a1).attestDeposit(ethers.id("p-1"), MELEK_ID, user.address, 5n);
+      await bridge.connect(a2).attestDeposit(ethers.id("p-1"), MELEK_ID, user.address, 5n);
+      expect(await wMelek.balanceOf(user.address)).to.equal(5n);
+    });
+
+    it("halts withdrawals while paused", async () => {
+      await bridge.connect(a1).attestDeposit(ethers.id("p-2"), MELEK_ID, user.address, 50n);
+      await bridge.connect(a2).attestDeposit(ethers.id("p-2"), MELEK_ID, user.address, 50n);
+
+      await bridge.connect(admin).pause();
+      await expect(
+        bridge.connect(user).withdraw(MELEK_ID, 10n, ethers.id("hathor"))
+      ).to.be.revertedWithCustomError(bridge, "EnforcedPause");
+    });
+
+    it("leaves admin registry ops usable while paused (rotate the federation under stop)", async () => {
+      await bridge.connect(admin).pause();
+      const ATTESTER = await bridge.ATTESTER_ROLE();
+      await bridge.connect(admin).revokeRole(ATTESTER, a3.address);
+      expect(await bridge.isAttester(a3.address)).to.equal(false);
+      await bridge.connect(admin).setLocalQuorum(3);
+      expect(await bridge.requiredQuorum()).to.equal(3n);
+    });
+
+    it("only PAUSER_ROLE can pause / unpause", async () => {
+      await expect(
+        bridge.connect(outsider).pause()
+      ).to.be.revertedWithCustomError(bridge, "AccessControlUnauthorizedAccount");
+      await bridge.connect(admin).pause();
+      await expect(
+        bridge.connect(outsider).unpause()
+      ).to.be.revertedWithCustomError(bridge, "AccessControlUnauthorizedAccount");
+    });
+  });
+
+  // Audit hardening: a per-token rolling-24h mint cap bounds the blast radius of an attester
+  // compromise. Opt-in (0 = uncapped), and a breach DEFERS the mint instead of reverting so the
+  // K-th attestation is never rolled back and the deposit can never be stranded.
+  describe("daily mint cap", function () {
+    const DAY = 24 * 60 * 60;
+
+    async function reachQuorum(ref, amount) {
+      await bridge.connect(a1).attestDeposit(ref, MELEK_ID, user.address, amount);
+      return bridge.connect(a2).attestDeposit(ref, MELEK_ID, user.address, amount);
+    }
+
+    it("is uncapped by default", async () => {
+      expect(await bridge.dailyMintCap(MELEK_ID)).to.equal(0n);
+      await reachQuorum(ethers.id("cap-uncapped"), 10n ** 30n);
+      expect(await wMelek.balanceOf(user.address)).to.equal(10n ** 30n);
+    });
+
+    it("only admin can set the cap", async () => {
+      await expect(
+        bridge.connect(outsider).setDailyMintCap(MELEK_ID, 100n)
+      ).to.be.revertedWithCustomError(bridge, "AccessControlUnauthorizedAccount");
+      await expect(bridge.connect(admin).setDailyMintCap(MELEK_ID, 100n))
+        .to.emit(bridge, "DailyMintCapUpdated")
+        .withArgs(MELEK_ID, 100n);
+      expect(await bridge.dailyMintCap(MELEK_ID)).to.equal(100n);
+    });
+
+    it("mints while under the cap and defers the mint that would breach it", async () => {
+      await bridge.connect(admin).setDailyMintCap(MELEK_ID, 100n);
+
+      await reachQuorum(ethers.id("cap-a"), 60n);
+      expect(await wMelek.balanceOf(user.address)).to.equal(60n);
+
+      // 60 + 50 > 100 → deferred, NOT reverted, and NOT minted.
+      await expect(reachQuorum(ethers.id("cap-b"), 50n))
+        .to.emit(bridge, "DepositDeferredByCap")
+        .withArgs(ethers.id("cap-b"), MELEK_ID, 50n, 100n);
+      expect(await wMelek.balanceOf(user.address)).to.equal(60n);
+      expect(await bridge.depositProcessed(ethers.id("cap-b"))).to.equal(false);
+    });
+
+    it("keeps the deferred deposit's quorum on record (the K-th vote is not rolled back)", async () => {
+      await bridge.connect(admin).setDailyMintCap(MELEK_ID, 10n);
+      await reachQuorum(ethers.id("cap-c"), 999n);
+      const d = await bridge.depositStatus(ethers.id("cap-c"));
+      expect(d.count).to.equal(2n);
+      expect(d.minted).to.equal(false);
+    });
+
+    it("finalizeDeposit reverts while the window still has no headroom", async () => {
+      await bridge.connect(admin).setDailyMintCap(MELEK_ID, 100n);
+      await reachQuorum(ethers.id("cap-d1"), 100n); // fills the window
+      await reachQuorum(ethers.id("cap-d2"), 5n); // deferred
+      await expect(
+        bridge.connect(outsider).finalizeDeposit(ethers.id("cap-d2"))
+      ).to.be.revertedWithCustomError(bridge, "DailyMintCapExceeded");
+    });
+
+    it("finalizeDeposit mints the deferred deposit once the 24h window rolls", async () => {
+      await bridge.connect(admin).setDailyMintCap(MELEK_ID, 100n);
+      await reachQuorum(ethers.id("cap-e1"), 100n);
+      await reachQuorum(ethers.id("cap-e2"), 40n); // deferred
+
+      await ethers.provider.send("evm_increaseTime", [DAY + 1]);
+      await ethers.provider.send("evm_mine", []);
+
+      // Permissionless: anyone may finalize the already-agreed tuple.
+      await expect(bridge.connect(outsider).finalizeDeposit(ethers.id("cap-e2")))
+        .to.emit(bridge, "DepositMinted")
+        .withArgs(ethers.id("cap-e2"), MELEK_ID, user.address, await wMelek.getAddress(), 40n);
+      expect(await wMelek.balanceOf(user.address)).to.equal(140n);
+      expect(await bridge.depositProcessed(ethers.id("cap-e2"))).to.equal(true);
+    });
+
+    it("finalizeDeposit cannot double-mint or run without quorum", async () => {
+      await bridge.connect(admin).setDailyMintCap(MELEK_ID, 1000n);
+      const ref = ethers.id("cap-f");
+      await reachQuorum(ref, 10n); // minted inline
+      await expect(
+        bridge.connect(outsider).finalizeDeposit(ref)
+      ).to.be.revertedWithCustomError(bridge, "DepositAlreadyProcessed");
+
+      const lonely = ethers.id("cap-g");
+      await bridge.connect(a1).attestDeposit(lonely, MELEK_ID, user.address, 10n); // 1 of 2
+      await expect(
+        bridge.connect(outsider).finalizeDeposit(lonely)
+      ).to.be.revertedWithCustomError(bridge, "QuorumNotReached");
+    });
+
+    it("a breached cap does not consume window headroom (failed check writes nothing)", async () => {
+      await bridge.connect(admin).setDailyMintCap(MELEK_ID, 100n);
+      await reachQuorum(ethers.id("cap-h1"), 90n);
+      await reachQuorum(ethers.id("cap-h2"), 50n); // deferred, must not eat the remaining 10
+      await reachQuorum(ethers.id("cap-h3"), 10n); // still fits → mints
+      expect(await wMelek.balanceOf(user.address)).to.equal(100n);
+    });
+  });
+});
+
+// The operator's LOCK_RELEASE ("lock what's returned, recycle when called") model: the bridge holds
+// a pre-funded pool and RELEASES on deposit / LOCKS on withdraw, never minting or burning. Mint
+// authority is renounced after funding, so wrapped supply is fixed — the fake-mint attack class is
+// impossible by construction (max exposure = the pool).
+describe("GrapheneDepositBridge — LOCK_RELEASE (pooled) mode", function () {
+  const POOL = 1_000_000n * 10n ** 8n;
+  const AMT = 100n * 10n ** 8n;
+  let bridge, wVkbt, admin, a1, a2, user;
+
+  beforeEach(async () => {
+    [admin, a1, a2, user] = await ethers.getSigners();
+    const B = await ethers.getContractFactory("GrapheneDepositBridge");
+    bridge = await B.deploy(admin.address, ZERO);
+    const W = await ethers.getContractFactory("WrappedEcosystemToken");
+    // custodian = admin so admin can mint the pool ONCE, then renounce.
+    wVkbt = await W.deploy("Wrapped VKBT", "wVKBT", 8, VKBT_ID, admin.address, admin.address);
+    await bridge.connect(admin).registerTokenPooled(VKBT_ID, await wVkbt.getAddress());
+    await wVkbt.connect(admin).mint(await bridge.getAddress(), POOL, ethers.id("genesis"));
+    await wVkbt.connect(admin).renounceRole(CUSTODIAN_ROLE, admin.address);
+    const ATTESTER = await bridge.ATTESTER_ROLE();
+    await bridge.connect(admin).grantRole(ATTESTER, a1.address);
+    await bridge.connect(admin).grantRole(ATTESTER, a2.address);
+    await bridge.connect(admin).setLocalQuorum(2);
+  });
+
+  async function deposit(ref, amount, to) {
+    await bridge.connect(a1).attestDeposit(ref, VKBT_ID, to.address, amount);
+    await bridge.connect(a2).attestDeposit(ref, VKBT_ID, to.address, amount);
+  }
+
+  it("deposit RELEASES from the pool without minting (supply fixed)", async () => {
+    const supply0 = await wVkbt.totalSupply();
+    await deposit(ethers.id("he-1"), AMT, user);
+    expect(await wVkbt.balanceOf(user.address)).to.equal(AMT);
+    expect(await wVkbt.balanceOf(await bridge.getAddress())).to.equal(POOL - AMT);
+    expect(await wVkbt.totalSupply()).to.equal(supply0); // never minted
+  });
+
+  it("withdraw LOCKS back into the pool without burning (recycle; supply fixed)", async () => {
+    const supply0 = await wVkbt.totalSupply();
+    await deposit(ethers.id("he-2"), AMT, user);
+    await wVkbt.connect(user).approve(await bridge.getAddress(), AMT);
+    await bridge.connect(user).withdraw(VKBT_ID, AMT, ethers.id("@dest"));
+    expect(await wVkbt.balanceOf(user.address)).to.equal(0n);
+    expect(await wVkbt.balanceOf(await bridge.getAddress())).to.equal(POOL); // recycled back
+    expect(await wVkbt.totalSupply()).to.equal(supply0); // never burned
+  });
+
+  it("cannot release more than the pool holds (backstop for a misconfigured pool)", async () => {
+    // First attester records the vote (no quorum yet, no release). The quorum-reaching second
+    // attester triggers the release, which exceeds the pool and reverts via safeTransfer.
+    // (A correctly-sized pool == backing cap, so this can't happen in practice.)
+    await bridge.connect(a1).attestDeposit(ethers.id("big"), VKBT_ID, user.address, POOL + 1n);
+    await expect(bridge.connect(a2).attestDeposit(ethers.id("big"), VKBT_ID, user.address, POOL + 1n))
+      .to.be.reverted;
+  });
+
+  it("no one can mint after renounce — fake-mint is impossible", async () => {
+    await expect(wVkbt.connect(admin).mint(user.address, 1n, ethers.id("x"))).to.be.reverted;
+  });
 });

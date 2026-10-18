@@ -73,6 +73,18 @@ contract CanonicalLockMintBridge is AccessControl, Pausable {
     /// @notice Monotonic nonce for outbound withdrawal (burn) messages from this bridge.
     uint256 public withdrawalNonce;
 
+    /// @notice Audit (daily mint cap): max wrapped amount mintable per rolling 24h window for this
+    ///         bridge's single {wrapped} token. 0 == uncapped (default), so the cap is opt-in and
+    ///         never bricks existing behaviour until an admin sets it. A tumbling 24h window (reset on
+    ///         the first mint after expiry) is used -- the standard cheap on-chain rolling-window
+    ///         approximation, matching {GrapheneDepositBridge.dailyMintCap}. Bounds the blast radius
+    ///         of a colluding K-of-N: at most `dailyMintCap` unbacked supply per 24h.
+    uint256 public dailyMintCap;
+    /// @notice Start timestamp of the current 24h mint window.
+    uint256 private _mintWindowStart;
+    /// @notice Amount already minted in the current window.
+    uint256 private _mintedInWindow;
+
     // --- events ------------------------------------------------------------ //
     event Minted(
         address indexed to,
@@ -80,6 +92,7 @@ contract CanonicalLockMintBridge is AccessControl, Pausable {
         uint256 indexed srcChainId,
         uint256 indexed nonce
     );
+    event DailyMintCapUpdated(uint256 cap);
     event Withdrawal(
         uint256 indexed withdrawalNonce,
         address indexed from,
@@ -93,6 +106,7 @@ contract CanonicalLockMintBridge is AccessControl, Pausable {
     error ZeroAmount();
     error AlreadyProcessed(uint256 srcChainId, uint256 nonce);
     error QuorumNotMet();
+    error DailyMintCapExceeded(uint256 windowMinted, uint256 cap, uint256 amount);
 
     /// @param admin        receives DEFAULT_ADMIN_ROLE + PAUSER_ROLE (the DAO / timelock).
     /// @param validatorSet_ the federated K-of-N validator set.
@@ -117,6 +131,14 @@ contract CanonicalLockMintBridge is AccessControl, Pausable {
 
     function unpause() external onlyRole(PAUSER_ROLE) {
         _unpause();
+    }
+
+    /// @notice Set the rolling-24h mint cap (0 = uncapped). Audit hardening mirroring
+    ///         {GrapheneDepositBridge.setDailyMintCap}: bounds how much a colluding validator quorum
+    ///         (or a bug) can mint before minting halts until the window rolls.
+    function setDailyMintCap(uint256 cap) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        dailyMintCap = cap;
+        emit DailyMintCapUpdated(cap);
     }
 
     // ===================================================================== //
@@ -173,6 +195,12 @@ contract CanonicalLockMintBridge is AccessControl, Pausable {
         // Effects before interaction (replay guard set prior to mint).
         processed[srcChainId][nonce] = true;
 
+        // Audit (daily mint cap): bound the per-24h minted amount. Reverting here is safe -- unlike
+        // GrapheneDepositBridge's on-chain attestation tally (where a revert would roll back a vote),
+        // the quorum here is carried in the caller's `sigs`, so a capped relayer simply retries after
+        // the tumbling window frees headroom; nothing is lost.
+        _consumeDailyCap(amount);
+
         IMintable(wrapped).mint(to, amount);
 
         emit Minted(to, amount, srcChainId, nonce);
@@ -202,5 +230,24 @@ contract CanonicalLockMintBridge is AccessControl, Pausable {
         IERC20Burnable(wrapped).burnFrom(msg.sender, amount);
 
         emit Withdrawal(nonce, msg.sender, dstChainId, dstAddr, amount);
+    }
+
+    // ===================================================================== //
+    //                               INTERNAL                                //
+    // ===================================================================== //
+
+    /// @dev Account the tumbling-24h mint cap. Reverts if `amount` would breach the cap in the
+    ///      current window. No-op when uncapped (cap == 0).
+    function _consumeDailyCap(uint256 amount) internal {
+        uint256 cap = dailyMintCap;
+        if (cap == 0) return; // uncapped
+        uint256 windowMinted = _mintedInWindow;
+        bool rolled = block.timestamp >= _mintWindowStart + 1 days;
+        if (rolled) windowMinted = 0;
+        if (windowMinted + amount > cap) {
+            revert DailyMintCapExceeded(windowMinted, cap, amount);
+        }
+        if (rolled) _mintWindowStart = block.timestamp;
+        _mintedInWindow = windowMinted + amount;
     }
 }

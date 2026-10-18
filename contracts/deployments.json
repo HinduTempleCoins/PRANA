@@ -1,6 +1,6 @@
 {
-  "network": "localprana",
-  "chainId": 108369,
+  "network": "prana_mainnet",
+  "chainId": 712217,
   "timestamp": "2026-06-04T01:32:29.480Z",
   "contracts": {
     "PoLToken": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
@@ -11,5 +11,106 @@
     "DividendDistributor": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
     "VoteEscrow": "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
     "GaugeController": "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6"
+  },
+  "compute": {
+    "network": "prana_mainnet",
+    "chainId": 712217,
+    "timestamp": "2026-08-29T20:41:59.830Z",
+    "params": {
+      "epochLength": "3600",
+      "windowEpochs": "3",
+      "epochIssuance": "1000000000000000000000",
+      "burnWeight": "1000000000000000000",
+      "coordinatorMinBond": "1000000000000000000000",
+      "attestorMinStake": "100000000000000000000"
+    },
+    "contracts": {
+      "PRANA": "0xE92E94C4929ea9D6EF7BFB8B3e192D66951Ab661",
+      "HashTaskWeightConfig": "0x26573e00B13205Bb0964aaA51E1e85C0b1c3434A",
+      "UnifiedSharesLedger": "0x8e7A690a55027d9ba225f11F07594bC583a9bF02",
+      "HashLaneCreditor": "0x2B2Fd4BB82bDc7b416232dc2c39e471d6eA4F995",
+      "AttestationStakeToken": "0x4557b5639D19a0E3869aE058F7B28b2d685F6176",
+      "AttestationStakeSlash": "0x84F9Be8F1fBF533927567735e50A9E7872261fE3",
+      "TaskVerificationGate": "0x52bfb643C54C8B937698727b58e2dc64ef1b0f80",
+      "TaskRegistry": "0x71D02F049F4FA0b4FBc33B39679565C2CDBfD13C",
+      "TaskLaneCreditor": "0x314de5f776A4d4c8eA739ED8Fb89403d9A931b5d",
+      "TaskDispatchPolicy": "0xab6d488cd0F45d95ca681d9700A717acEb26893A",
+      "BurnStakeRegistry": "0x019CB51b881C6f4E2071aac4520821d5ca262154",
+      "BurnStakeGovernanceAdapter": "0x03CcA7F5Fb8c313bF2600da83f30374C82655916",
+      "FixedRatioPriceSource": "0x15709cc0b8B5f6C4CB5357a002e1C5A31dBAA221",
+      "MultiCurrencyBurnRouter": "0x478ad19752813A105982b02703fAd4A81dEeE8dF",
+      "HathorFeeTreasury": "0xB3dA4Debfc8FdE5a7C224CEaaFe5A09d97c79304",
+      "SimplePriceOracle": "0xac418c431eB9Ae0B1f0323b33e7F79A9FB451579",
+      "EmissionPhaseView": "0x5D2A0fC2065914723420Fece5719D4E95f750bD6",
+      "VerifiedMachineCounter": "0x36cCAC5fabf73402e652BEeAB0aCF7564B9F2B84",
+      "CountercyclicalFeeOracle": "0xD35EB99dC0FbA2DAF082B022bBc61f3cb8238177",
+      "SettlementFeeHook": "0x76C986Cb9838211ca2258D04841B7d58Ba38Eb07",
+      "CoordinatorRegistry": "0x96730C6c707a49A6B911FFC2e9416Eb360dc1600",
+      "JobClaimLedger": "0xB1EA7B04ff37f2FB750Ca0C1394410c2798b1329",
+      "RegentGovernance": "0x5a49146B896Cb2De76996a67F275Db76BC933b6F",
+      "RegentVotesAdapter": "0xACFA57D6D58faA6d1101045578A6A562167819f2"
+    },
+    "wiring": [
+      "OK  ledger.HASH_CREDITOR -> HashLaneCreditor",
+      "OK  ledger.TASK_CREDITOR -> TaskLaneCreditor",
+      "OK  ledger.BURN_CREDITOR -> deployer (burn-emission keeper)",
+      "OK  ledger.FUNDER_ROLE -> deployer",
+      "OK  gate.CONSUMER_ROLE -> TaskLaneCreditor",
+      "OK  taskRegistry.setTaskType(\"hathor-inference\", gate, 1e18, prio 100, enabled)",
+      "OK  ledger.setFeeHook -> SettlementFeeHook",
+      "NOTE SettlementFeeHook granted LEDGER_ROLE to ledger in its constructor (PP1)",
+      "NOTE HathorFeeTreasury is the hook's immutable skim destination (PP1 ctor)",
+      "OK  priceFeed.setPrice(PRANA, 5e18) (mid-band)",
+      "OK  burnRegistry.setWeightHook -> BurnStakeGovernanceAdapter",
+      "OK  burnRegistry.BURNER_ROLE -> MultiCurrencyBurnRouter",
+      "OK  priceSource.setRatio(PRANA, 1e18) (parity)",
+      "OK  burnRouter.setCurrencyAllowed(PRANA, true)",
+      "NOTE JobClaimLedger wired to CoordinatorRegistry in its constructor (PR2)"
+    ]
+  },
+  "_note_contracts_block": "The top-level contracts{} block holds STALE local-anvil addresses (0x5FbD.., 0xe7f1..) from an early run, NOT mainnet. Real mainnet KULA-farm addresses are in the kula{} block below.",
+  "kula": {
+    "network": "prana_mainnet",
+    "chainId": 712217,
+    "timestamp": "2026-08-30T05:16:41.399668Z",
+    "economics": "1,000,000 KULA/yr emission, -10%/yr off-chain decay (~10M lifetime cap 11M); split 45% miners / 35% LPs / 10% lotto / 10% stakers. KULA + MWALI + MelekBorrowNote are emission-only (deployer holds no MINTER_ROLE).",
+    "reused": {
+      "KULA": "0x32255D0138f5D645894FA89b5D5B5a68cF9Aa631",
+      "Router": "0x24e53792B7f6609c85Bd3a3179A90638c9Dbc8B5",
+      "Factory": "0xFb5B83ed7F54e5fa45ED528dbe2167bB0b93b1E6",
+      "WPRANA": "0xCAbCaAeBBF7a7312b91A92Faa635d7a32Af42a34",
+      "EmissionScheduler": "0x611Ad02Ebe7F3FfE2050449Def20d6775E875323",
+      "PRANA": "0xE92E94C4929ea9D6EF7BFB8B3e192D66951Ab661"
+    },
+    "deployed": {
+      "PairKulaWprana": "0x3fC307dEa06667f5a7a640Ec0aBb950EacC4B8C2",
+      "VoteEscrow": "0x2a9da080BB38C9cfc4B9c8D7cFd4699fF57a5438",
+      "GaugeController": "0x3858Bcd8CEE92FBDB0ECBC3946C67C112416A63C",
+      "LiquidityGauge_KULA_WPRANA": "0x46d92Ae6F5D55Eb5f12F222e44F0CDAC74E38e45",
+      "DividendDistributor_Stakers": "0xd9B52f758Aaab68BdEde7F84bE9bF6b2353E479A",
+      "DividendDistributor_Miners": "0x52a32920d4635AE0ab7F77b54679e9359D6Fa778",
+      "NoLossLotto": "0xfE5CC3c2919c893a33690bf6b36d58Ae5A989dB3",
+      "MWALI": "0x36C6921e2CECe9DEc7a5AAC42bC6738011F2a1c9",
+      "SimplePriceOracle": "0x905B3505037E49771B35F9f3944D8EC2B9eF3AFD",
+      "MelekBorrowNote": "0x8c4B882D7379D35413E2a9202f63B53f893D1A9D",
+      "CDPVault": "0x9cdAe72dE19F93947cE3B4d5329FA81A5ef53ba2",
+      "Timelock": "0x574DeEaa82BcA4ACF6C5669D8dbe084C28EE0da4"
+    },
+    "roles": {
+      "KULA.MINTER": [
+        "EmissionScheduler(0x611Ad0)"
+      ],
+      "KULA.DEFAULT_ADMIN": "Timelock(0x574DeE), 2-day delay; deployer renounced",
+      "MWALI.MINTER": [
+        "LiquidityGauge_KULA_WPRANA(0x46d92A)"
+      ],
+      "MWALI.DEFAULT_ADMIN": "Timelock; deployer renounced",
+      "MelekBorrowNote.MINTER": [
+        "CDPVault(0x9cdAe7)"
+      ],
+      "MelekBorrowNote.DEFAULT_ADMIN": "Timelock; deployer renounced"
+    },
+    "cdp": "lock KULA -> borrow MelekBorrowNote (mMELEK synthetic, 50% LTV). NOT the bridge wMELEK (kept separate to preserve the bridge supply==locked invariant).",
+    "keeper": "kula-emission-keeper.timer (hourly, systemd on the chain host); mintDue + 45/35/10/10 split + 10%/yr decay; defers while all sinks empty; key JIT via LoadCredentialEncrypted."
   }
 }

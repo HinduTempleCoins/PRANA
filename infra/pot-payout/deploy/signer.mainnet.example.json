@@ -1,0 +1,13 @@
+{"name": "pot-signer-1", "rpc": "http://127.0.0.1:<own archive node>", "publishUrl": "https://<pool host>/pot",
+ "key": {"keystore": "/etc/prana-pot/pot-signer-1.json", "passwordFile": "/etc/prana-pot/pot-signer-1.pass"},
+ "stateDir": "/var/lib/prana-pot-signer/state", "sigDir": "/var/lib/prana-pot-signer/sigs",
+ "shareverify": "/root/prana-payout/bin/shareverify", "aiRerun": 0.2,
+ "hathor0": {"fleetWorker": "/root/prana-payout/lanes/fleet_worker.py", "ckpt": "/opt/hathor-lm/runs/hathor0-v1/ckpt.pt",
+             "tok": "/opt/hathor-lm/data/tokenizer.json", "modelDir": "/opt/hathor-lm/train"},
+ "roundBlocks": 6646, "depth": 64,
+ "params": {"chainId": 712217, "pot": "<PotDistributor address>", "unitDiff": "<pool share diff>", "aiWeight": "1.0",
+   "minShareDiff": "<pool share diff>", "ecip1099FBlock": 40000, "requireTemplates": false, "luckMin": 0.25,
+   "luckMinExpectedBlocks": 20, "denyLogins": ["<pot>", "0xf129608bf3ba681012cf82dffcfbb92563df987e", "0xbd749b16e83d0c81fbce8fc72005e81f3b3180ff"],
+   "banStrikes": 3, "anchors": ["<hathor fleet anchor>"], "modelSha256": ["88021b98a2bc3138b2d8f7cb48754822d3f29322f5e96291133cc8a512be787d"],
+   "genesisStartBlock": "<F-1>",
+   "aiTypes": {"llm.generate": {"minQuorum": 2, "anchor": true}, "embed.text": {"minQuorum": 2, "anchor": true, "cosine": 0.9999}}}}

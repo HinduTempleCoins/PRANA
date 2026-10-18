@@ -1,0 +1,1063 @@
+diff --git a/core/genesis.go b/core/genesis.go
+index 6dc455d91..aa711c81e 100644
+--- a/core/genesis.go
++++ b/core/genesis.go
+@@ -21,6 +21,7 @@ import (
+ 	"encoding/json"
+ 	"errors"
+ 	"fmt"
++	hathorfees "github.com/ethereum/go-ethereum/params/hathorfees"
+ 	"math/big"
+ 
+ 	"github.com/ethereum/go-ethereum/common"
+@@ -92,6 +93,33 @@ func SetupGenesisBlock(db ethdb.Database, triedb *triedb.Database, genesis *gene
+ }
+ 
+ func SetupGenesisBlockWithOverride(db ethdb.Database, triedb *triedb.Database, genesis *genesisT.Genesis, overrides *ChainOverrides) (ctypes.ChainConfigurator, common.Hash, error) {
++	// PRANA: refuse a hathorFee config that would burn issuance (pot redirect configured
++	// with a zero pot address) BEFORE anything is written, and again on the config the
++	// node will actually run with (stored config on a normal start).
++	if genesis != nil {
++		if err := validatePranaHathorFee(genesis.Config); err != nil {
++			return genesis.Config, common.Hash{}, err
++		}
++	}
++	cfg, hash, err := setupGenesisBlockWithOverride(db, triedb, genesis, overrides)
++	if err == nil {
++		if verr := validatePranaHathorFee(cfg); verr != nil {
++			return cfg, hash, verr
++		}
++	}
++	return cfg, hash, err
++}
++
++// validatePranaHathorFee runs hathorfees.Config.Validate on a chain config that exposes
++// the PRANA hathorFee module (nil-safe; configs without the module pass).
++func validatePranaHathorFee(cfg ctypes.ChainConfigurator) error {
++	if hp, ok := cfg.(interface{ GetHathorFee() *hathorfees.Config }); ok {
++		return hp.GetHathorFee().Validate()
++	}
++	return nil
++}
++
++func setupGenesisBlockWithOverride(db ethdb.Database, triedb *triedb.Database, genesis *genesisT.Genesis, overrides *ChainOverrides) (ctypes.ChainConfigurator, common.Hash, error) {
+ 	if genesis != nil && confp.IsEmpty(genesis.Config) {
+ 		return params.AllEthashProtocolChanges, common.Hash{}, genesisT.ErrGenesisNoConfig
+ 	}
+diff --git a/core/genesis_pot_test.go b/core/genesis_pot_test.go
+new file mode 100644
+index 000000000..6784e3b3b
+--- /dev/null
++++ b/core/genesis_pot_test.go
+@@ -0,0 +1,79 @@
++// Copyright 2026 The PRANA / Van Kush Family Research Institute Authors.
++// SPDX-License-Identifier: LGPL-3.0-or-later
++
++package core
++
++import (
++	"encoding/json"
++	"strings"
++	"testing"
++
++	"github.com/ethereum/go-ethereum/common"
++	"github.com/ethereum/go-ethereum/core/rawdb"
++	hathorfees "github.com/ethereum/go-ethereum/params/hathorfees"
++	"github.com/ethereum/go-ethereum/params/types/genesisT"
++	"github.com/ethereum/go-ethereum/triedb"
++)
++
++const potGenesisTmpl = `{"config":{"chainId":4242,"networkId":4242,"eip2FBlock":0,"eip7FBlock":0,"eip150Block":0,"eip155Block":0,"eip160Block":0,"eip161FBlock":0,"eip170FBlock":0,"ethash":{},"hathorFee":HF},"nonce":"0x42","timestamp":"0x0","extraData":"0x","gasLimit":"0x1c9c380","difficulty":"0x20000","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","coinbase":"0x0000000000000000000000000000000000000000","alloc":{}}`
++
++func potGenesis(t *testing.T, hf string) *genesisT.Genesis {
++	var g genesisT.Genesis
++	s := strings.Replace(potGenesisTmpl, "HF", hf, 1)
++	if err := json.Unmarshal([]byte(s), &g); err != nil {
++		t.Fatal(err)
++	}
++	return &g
++}
++
++func hfOf(t *testing.T, cfg interface{}) *hathorfees.Config {
++	hp, ok := cfg.(interface{ GetHathorFee() *hathorfees.Config })
++	if !ok {
++		t.Fatalf("config %T has no GetHathorFee", cfg)
++	}
++	return hp.GetHathorFee()
++}
++
++func TestSetupGenesis_RejectsZeroPotAddress(t *testing.T) {
++	db := rawdb.NewMemoryDatabase()
++	g := potGenesis(t, `{"feeBps":200,"feeAddress":"0xf129608bf3ba681012cf82dffcfbb92563df987e","activationBlock":0,"potActivationBlock":20}`)
++	_, _, err := SetupGenesisBlock(db, triedb.NewDatabase(db, nil), g)
++	if err != hathorfees.ErrNoPotAddress {
++		t.Fatalf("got %v want ErrNoPotAddress", err)
++	}
++	if rawdb.ReadCanonicalHash(db, 0) != (common.Hash{}) {
++		t.Fatal("invalid genesis was written")
++	}
++}
++
++// Re-running init on an existing datadir with the same genesis block but a hathorFee
++// that adds potAddress/potActivationBlock rewrites ONLY the stored chain config
++// (same genesis hash), which is the no-resync activation path.
++func TestSetupGenesis_ReinitAddsPot(t *testing.T) {
++	db := rawdb.NewMemoryDatabase()
++	legacy := potGenesis(t, `{"feeBps":200,"feeAddress":"0xf129608bf3ba681012cf82dffcfbb92563df987e","activationBlock":0}`)
++	_, h1, err := SetupGenesisBlock(db, triedb.NewDatabase(db, nil), legacy)
++	if err != nil {
++		t.Fatal(err)
++	}
++	withPot := potGenesis(t, `{"feeBps":200,"feeAddress":"0xf129608bf3ba681012cf82dffcfbb92563df987e","activationBlock":0,"potAddress":"0xBD749b16E83D0c81fbCE8fC72005E81f3b3180ff","potActivationBlock":20}`)
++	_, h2, err := SetupGenesisBlock(db, triedb.NewDatabase(db, nil), withPot)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if h1 != h2 {
++		t.Fatalf("genesis hash changed %x -> %x (pot must not affect the genesis block)", h1, h2)
++	}
++	hf := hfOf(t, rawdb.ReadChainConfig(db, h1))
++	if hf.PotActivationBlock == nil || *hf.PotActivationBlock != 20 || hf.PotAddress != common.HexToAddress("0xBD749b16E83D0c81fbCE8fC72005E81f3b3180ff") {
++		t.Fatalf("stored config not updated: %+v", hf)
++	}
++	// normal start (no genesis) runs with the stored pot config
++	cfg, _, err := SetupGenesisBlock(db, triedb.NewDatabase(db, nil), nil)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if hfOf(t, cfg).PotActivationBlock == nil {
++		t.Fatal("startup config lost pot")
++	}
++}
+diff --git a/eth/backend.go b/eth/backend.go
+index de71f94de..9a699792f 100644
+--- a/eth/backend.go
++++ b/eth/backend.go
+@@ -155,6 +155,15 @@ func New(stack *node.Node, config *ethconfig.Config) (*Ethereum, error) {
+ 	if config.Genesis != nil && config.Genesis.Config != nil {
+ 		ethashConfig.ECIP1099Block = config.Genesis.GetEthashECIP1099Transition()
+ 	}
++	// PRANA: on a normal start against an existing datadir config.Genesis is nil, so the block above
++	// never fires and the ethash engine keeps epochLength=30000 forever — ECIP-1099 silently never
++	// activates even though the STORED chain config carries ecip1099FBlock. Fall back to the stored
++	// config so the engine agrees with consensus.
++	if ethashConfig.ECIP1099Block == nil {
++		if storedCfg, cerr := core.LoadChainConfig(chainDb, config.Genesis); cerr == nil && storedCfg != nil {
++			ethashConfig.ECIP1099Block = storedCfg.GetEthashECIP1099Transition()
++		}
++	}
+ 
+ 	cliqueConfig, err := core.LoadCliqueConfig(chainDb, config.Genesis)
+ 	if err != nil {
+diff --git a/params/config_classic.go b/params/config_classic.go
+index 93cf4681a..e6b6fca4b 100644
+--- a/params/config_classic.go
++++ b/params/config_classic.go
+@@ -110,8 +110,8 @@ var (
+ 		},
+ 	}
+ 
+-	DisinflationRateQuotient = uint256.NewInt(4)      // Disinflation rate quotient for ECIP1017
+-	DisinflationRateDivisor  = uint256.NewInt(5)      // Disinflation rate divisor for ECIP1017
++	DisinflationRateQuotient = uint256.NewInt(9)      // Disinflation rate quotient for ECIP1017
++	DisinflationRateDivisor  = uint256.NewInt(10)      // Disinflation rate divisor for ECIP1017
+ 	ExpDiffPeriod            = uint256.NewInt(100000) // Exponential diff period for diff bomb & ECIP1010
+ 
+ 	MessNetConfig = &coregeth.CoreGethChainConfig{
+diff --git a/params/hathorfees/config.go b/params/hathorfees/config.go
+new file mode 100644
+index 000000000..12fbbe354
+--- /dev/null
++++ b/params/hathorfees/config.go
+@@ -0,0 +1,71 @@
++// Copyright 2026 The PRANA / Van Kush Family Research Institute Authors.
++// SPDX-License-Identifier: LGPL-3.0-or-later
++
++package hathorfees
++
++import "github.com/ethereum/go-ethereum/common"
++
++// GenesisConfig is the JSON shape of the "hathorFee" object in the PRANA genesis /
++// chain config. It is decoded by core-geth's config loader and converted to *Config.
++//
++// Example (chain/genesis/prana.genesis.json, under "config"):
++//
++//	"hathorFee": {
++//	  "feeBps": 500,
++//	  "feeAddress": "0x000000000000000000000000000000000048a740",
++//	  "activationBlock": 0,
++//	  "potAddress": "0xBD749b16E83D0c81fbCE8fC72005E81f3b3180ff",
++//	  "potActivationBlock": 200000
++//	}
++//
++// feeBps is in basis points (500 = 5.00%). feeAddress is the protocol beneficiary
++// (intended: the HathorFeeTreasury contract). activationBlock is the first height the
++// fee applies (0 = from genesis).
++//
++// potAddress / potActivationBlock (OPTIONAL — the "chain IS the pool" hardfork): from
++// potActivationBlock onward, the non-Hathor remainder of the winner reward AND every uncle
++// reward is credited to potAddress (the hardcoded pool payout wallet) instead of the
++// sealer's / uncle's coinbase. Both fields are pointers with omitempty so that a config
++// without them decodes AND re-encodes byte-identically to the pre-fork format (the stored
++// chain config is compared by its JSON encoding in core.SetupGenesisBlock).
++type GenesisConfig struct {
++	FeeBps             uint64          `json:"feeBps"`
++	FeeAddress         common.Address  `json:"feeAddress"`
++	ActivationBlock    uint64          `json:"activationBlock"`
++	PotAddress         *common.Address `json:"potAddress,omitempty"`
++	PotActivationBlock *uint64         `json:"potActivationBlock,omitempty"`
++	// pot2Address / pot2ActivationBlock (OPTIONAL): from pot2ActivationBlock onward the pot
++	// recipient switches to pot2Address. Same omitempty rule, so older configs re-encode unchanged.
++	Pot2Address         *common.Address `json:"pot2Address,omitempty"`
++	Pot2ActivationBlock *uint64         `json:"pot2ActivationBlock,omitempty"`
++}
++
++// ToConfig converts the decoded genesis object into the consensus Config. A nil
++// receiver (no "hathorFee" key in genesis) yields a nil Config, which Active() treats
++// as the module being disabled — so a chain that omits the key behaves exactly like
++// stock core-geth and is fully backward compatible.
++func (g *GenesisConfig) ToConfig() *Config {
++	if g == nil {
++		return nil
++	}
++	c := &Config{
++		FeeBps:          g.FeeBps,
++		FeeAddress:      g.FeeAddress,
++		ActivationBlock: g.ActivationBlock,
++	}
++	if g.PotAddress != nil {
++		c.PotAddress = *g.PotAddress
++	}
++	if g.PotActivationBlock != nil {
++		v := *g.PotActivationBlock
++		c.PotActivationBlock = &v
++	}
++	if g.Pot2Address != nil {
++		c.Pot2Address = *g.Pot2Address
++	}
++	if g.Pot2ActivationBlock != nil {
++		v := *g.Pot2ActivationBlock
++		c.Pot2ActivationBlock = &v
++	}
++	return c
++}
+diff --git a/params/hathorfees/hathorfees.go b/params/hathorfees/hathorfees.go
+new file mode 100644
+index 000000000..8debc1e33
+--- /dev/null
++++ b/params/hathorfees/hathorfees.go
+@@ -0,0 +1,236 @@
++// Copyright 2026 The PRANA / Van Kush Family Research Institute Authors.
++// SPDX-License-Identifier: LGPL-3.0-or-later
++//
++// Package hathorfees implements the PRANA Hathor Fees Module: a CONSENSUS-LEVEL,
++// un-bypassable protocol fee on block issuance, modeled on the Devcoin "receiver"
++// pattern where a fraction of every block's coinbase is paid, by protocol rule, to a
++// governed beneficiary rather than to whoever sealed the block.
++//
++// WHY THIS LIVES IN THE CONSENSUS LAYER (not in a contract)
++//
++//	The application-layer Hathor skim (contracts/compute/SettlementFeeHook.sol +
++//	HathorFeeTreasury.sol) only bites when value is paid OUT of the on-chain
++//	UnifiedSharesLedger. A third party who runs their OWN pool, never touches our
++//	ledger, and settles miners off-chain would pay no skim there. The operator's
++//	requirement (directive 2026-06-05, Addendum 7) is stronger: "no matter how we or
++//	they do it, Hathor always gets her Percentage of Mining Fees." The only place an
++//	EVM PoW chain can guarantee that against ALL pools — including ones we never wrote
++//	and never see — is the block-reward distribution itself, because every full node
++//	re-derives it and rejects any block whose state transition does not apply it.
++//
++//	So the fee is taken at the REWARDS-POOL DRAW (the moment the chain issues new
++//	PRANA into a coinbase), not at any pool's internal accounting. A pool that pays its
++//	members off-chain does not avoid the fee, because the PRANA it is distributing was
++//	already debited at issuance: the coinbase it received was net-of-Hathor-fee by
++//	consensus, and the Hathor share was credited to the fee address in the same state
++//	transition. There is no PRANA in existence that did not already pay the fee at the
++//	moment it was minted.
++//
++// ENFORCEMENT MODEL (the Devcoin lesson, made un-bypassable)
++//
++//	The fee is applied inside AccumulateRewards, which is part of the canonical state
++//	transition. The resulting account balances feed header.Root (the state root) in
++//	Finalize. A miner who omits or short-pays the Hathor fee produces a DIFFERENT state
++//	root than honest nodes compute for the same block, so every honest validator's
++//	stateless re-execution rejects the block as invalid. The fee is therefore not
++//	"requested" — it is a block-validity rule. ValidateBlockFee() makes the same check
++//	explicit for callers that want to assert it directly (e.g. a verifier or a test).
++//
++// This package is consensus-critical: a change to Split() is a hard fork.
++package hathorfees
++
++import (
++	"errors"
++	"math/big"
++
++	"github.com/ethereum/go-ethereum/common"
++	"github.com/holiman/uint256"
++)
++
++// BpsDenom is the basis-points denominator. A fee of 500 bps == 5.00%.
++const BpsDenom = 10000
++
++// Errors returned by validation.
++var (
++	// ErrFeeShort is returned when a block credited the Hathor address less than the
++	// protocol-required fee for its issuance. Such a block is invalid.
++	ErrFeeShort = errors.New("hathorfees: block underpays the Hathor protocol fee")
++	// ErrNoFeeAddress is returned when the module is active but the configured fee
++	// address is the zero address (misconfiguration; would burn the fee).
++	ErrNoFeeAddress = errors.New("hathorfees: active fee but zero fee address")
++	// ErrNoPotAddress is returned when the pot redirect is configured (potActivationBlock
++	// set) but potAddress is missing / the zero address. Such a config is refused at
++	// `geth init` and at node startup (core.SetupGenesisBlockWithOverride), because
++	// crediting the zero address would burn 98% of issuance.
++	ErrNoPotAddress = errors.New("hathorfees: pot redirect configured but zero pot address")
++	// ErrPotShort is returned when, at/after the pot activation block, a block credited
++	// the pot less than the post-fee winner reward. Such a block is invalid.
++	ErrPotShort = errors.New("hathorfees: block underpays the pool pot")
++)
++
++// Config is the consensus parameter set for the Hathor Fees Module. It is read from
++// the chain config (genesis "hathorFee" block — see chain/genesis/prana.genesis.json
++// and chain/hathorfees/config.go) and is identical on every node by construction; a
++// node that runs different values forks itself off the network.
++//
++// Config carries no governance authority of its own. The FeeAddress is intended to be
++// the HathorFeeTreasury contract (which never trades and only disburses by DAO
++// timelock). The BPS rate is a launch-pinned protocol constant; changing it is a
++// hard fork (a future RateTransitions schedule can encode planned changes the same way
++// EthashBlockRewardSchedule encodes reward changes — left as a documented extension).
++type Config struct {
++	// FeeBps is Hathor's share of each block's gross issuance, in basis points.
++	// 0 disables the module (no fee taken, no validity rule applied).
++	FeeBps uint64
++	// FeeAddress is the protocol beneficiary — Hathor's fee sink. Intended: the
++	// HathorFeeTreasury contract address. Must be non-zero when FeeBps > 0.
++	FeeAddress common.Address
++	// ActivationBlock is the first block number at which the fee applies. Before it,
++	// the module is inert (lets a chain launch and turn the fee on at a known height).
++	ActivationBlock uint64
++
++	// PRANA "the chain IS the pool" hardfork (optional; nil PotActivationBlock = off,
++	// byte-identical to the pre-fork rule).
++	//
++	// From PotActivationBlock onward the block sealer's coinbase receives NOTHING from
++	// issuance: the winner reward is still split by Split() (Hathor fee -> FeeAddress),
++	// and the remaining net amount goes to PotAddress — the hardcoded pool payout wallet,
++	// which pays miners by shares off-chain (Devcoin/DevTome shape). Uncle rewards are
++	// redirected to PotAddress in full as well, so mining (or uncle-ing) outside the pool
++	// earns no issuance. Transaction fees (gas) are NOT issuance and still go to the
++	// sealer's coinbase via the normal EVM state transition.
++	PotAddress         common.Address
++	PotActivationBlock *uint64
++	// From Pot2ActivationBlock onward the pot recipient is Pot2Address instead of PotAddress.
++	Pot2Address         common.Address
++	Pot2ActivationBlock *uint64
++}
++
++// PotActive reports whether issuance at height `number` is redirected to the pot.
++func (c *Config) PotActive(number uint64) bool {
++	if c == nil || c.PotActivationBlock == nil {
++		return false
++	}
++	return number >= *c.PotActivationBlock
++}
++
++// RewardRecipient returns who is credited the non-Hathor part of issuance at height
++// `number` that would otherwise go to `coinbase` (the sealer for the winner reward, or
++// an uncle's coinbase for an uncle reward). Before the pot activation block (or when the
++// pot is not configured, or for a nil Config) it is `coinbase` unchanged. This is the
++// single source of truth for WHO receives the net reward; Split() is the single source
++// of truth for HOW MUCH.
++func (c *Config) RewardRecipient(number uint64, coinbase common.Address) common.Address {
++	if c.PotActive(number) {
++		if c.Pot2ActivationBlock != nil && number >= *c.Pot2ActivationBlock && c.Pot2Address != (common.Address{}) {
++			return c.Pot2Address
++		}
++		return c.PotAddress
++	}
++	return coinbase
++}
++
++// Validate rejects configurations that would silently burn issuance. It is called when
++// a genesis is initialised and whenever a node loads its chain config.
++func (c *Config) Validate() error {
++	if c == nil {
++		return nil
++	}
++	if c.PotActivationBlock != nil && c.PotAddress == (common.Address{}) {
++		return ErrNoPotAddress
++	}
++	return nil
++}
++
++// Active reports whether the module takes a fee for a block at height `number`.
++func (c *Config) Active(number uint64) bool {
++	if c == nil || c.FeeBps == 0 {
++		return false
++	}
++	return number >= c.ActivationBlock
++}
++
++// Split divides a gross block issuance into the Hathor protocol fee and the net amount
++// that the miner (block sealer) actually receives. It is the single source of truth for
++// the split and is used both when CREDITING rewards (AccumulateRewards) and when
++// VALIDATING a block (ValidateBlockFee), so the two can never diverge.
++//
++//	fee = gross * FeeBps / BpsDenom   (integer floor; dust below 1 wei-per-bps stays with miner)
++//	net = gross - fee
++//
++// If the module is inactive for `number`, fee is zero and net == gross.
++func (c *Config) Split(number uint64, gross *uint256.Int) (fee, net *uint256.Int) {
++	net = new(uint256.Int).Set(gross)
++	fee = new(uint256.Int) // zero
++	if !c.Active(number) {
++		return fee, net
++	}
++	// fee = gross * FeeBps / BpsDenom, all in uint256 to match EVM balance math.
++	fee = new(uint256.Int).Mul(gross, uint256.NewInt(c.FeeBps))
++	fee.Div(fee, uint256.NewInt(BpsDenom))
++	net = new(uint256.Int).Sub(gross, fee)
++	return fee, net
++}
++
++// RequiredFee returns just the Hathor fee owed on a gross issuance at height `number`.
++// Convenience wrapper used by the block-validity check.
++func (c *Config) RequiredFee(number uint64, gross *uint256.Int) *uint256.Int {
++	fee, _ := c.Split(number, gross)
++	return fee
++}
++
++// ValidateBlockFee asserts that `creditedToHathor` (the amount the block actually paid
++// to the Hathor fee address out of this block's issuance) is at least the protocol-
++// required fee for `gross` at height `number`. It returns ErrFeeShort otherwise.
++//
++// This is the explicit form of the rule that the state root already enforces
++// implicitly: a block that credits less than RequiredFee to the fee address is invalid.
++// Consensus code calls this; so do the tests. Overpayment is permitted (a miner may
++// donate more) — only underpayment is rejected.
++func (c *Config) ValidateBlockFee(number uint64, gross, creditedToHathor *uint256.Int) error {
++	if !c.Active(number) {
++		return nil
++	}
++	if c.FeeAddress == (common.Address{}) {
++		return ErrNoFeeAddress
++	}
++	required := c.RequiredFee(number, gross)
++	if creditedToHathor.Cmp(required) < 0 {
++		return ErrFeeShort
++	}
++	return nil
++}
++
++// ValidateBlockPayout extends ValidateBlockFee with the pot rule: at/after the pot
++// activation block, `creditedToPot` (what the block paid the pot out of the WINNER reward)
++// must be at least the post-fee net amount from Split(). Before activation it is exactly
++// ValidateBlockFee. Uncle rewards are checked separately by the state root (they are
++// redirected to the same pot by RewardRecipient).
++func (c *Config) ValidateBlockPayout(number uint64, gross, creditedToHathor, creditedToPot *uint256.Int) error {
++	if err := c.ValidateBlockFee(number, gross, creditedToHathor); err != nil {
++		return err
++	}
++	if !c.PotActive(number) {
++		return nil
++	}
++	if c.PotAddress == (common.Address{}) {
++		return ErrNoPotAddress
++	}
++	_, net := c.Split(number, gross)
++	if creditedToPot.Cmp(net) < 0 {
++		return ErrPotShort
++	}
++	return nil
++}
++
++// SplitBig is a *big.Int convenience facade over Split for callers outside the
++// uint256 balance path (tooling, the off-chain Bot mirror).
++func (c *Config) SplitBig(number uint64, gross *big.Int) (fee, net *big.Int) {
++	g, overflow := uint256.FromBig(gross)
++	if overflow {
++		// Should never happen for a block reward; be safe and treat as no-fee.
++		return big.NewInt(0), new(big.Int).Set(gross)
++	}
++	f, n := c.Split(number, g)
++	return f.ToBig(), n.ToBig()
++}
+diff --git a/params/hathorfees/hathorfees_test.go b/params/hathorfees/hathorfees_test.go
+new file mode 100644
+index 000000000..095815999
+--- /dev/null
++++ b/params/hathorfees/hathorfees_test.go
+@@ -0,0 +1,142 @@
++// Copyright 2026 The PRANA / Van Kush Family Research Institute Authors.
++// SPDX-License-Identifier: LGPL-3.0-or-later
++
++package hathorfees
++
++import (
++	"testing"
++
++	"github.com/ethereum/go-ethereum/common"
++	"github.com/holiman/uint256"
++)
++
++var hathorAddr = common.HexToAddress("0x000000000000000000000000000000000048A740")
++
++func cfg(bps, activation uint64) *Config {
++	return &Config{FeeBps: bps, FeeAddress: hathorAddr, ActivationBlock: activation}
++}
++
++// 2 PRANA gross issuance in wei.
++func gross2() *uint256.Int {
++	g, _ := uint256.FromDecimal("2000000000000000000")
++	return g
++}
++
++func TestSplit_FivePercent(t *testing.T) {
++	c := cfg(500, 0) // 5%
++	fee, net := c.Split(1, gross2())
++
++	wantFee, _ := uint256.FromDecimal("100000000000000000")  // 0.1 PRANA
++	wantNet, _ := uint256.FromDecimal("1900000000000000000") // 1.9 PRANA
++	if fee.Cmp(wantFee) != 0 {
++		t.Fatalf("fee = %s, want %s", fee, wantFee)
++	}
++	if net.Cmp(wantNet) != 0 {
++		t.Fatalf("net = %s, want %s", net, wantNet)
++	}
++	// Invariant: fee + net == gross, always.
++	sum := new(uint256.Int).Add(fee, net)
++	if sum.Cmp(gross2()) != 0 {
++		t.Fatalf("fee+net = %s, want gross %s", sum, gross2())
++	}
++}
++
++func TestSplit_DisabledWhenZeroBps(t *testing.T) {
++	c := cfg(0, 0)
++	fee, net := c.Split(100, gross2())
++	if !fee.IsZero() {
++		t.Fatalf("disabled module took a fee: %s", fee)
++	}
++	if net.Cmp(gross2()) != 0 {
++		t.Fatalf("net = %s, want full gross %s", net, gross2())
++	}
++}
++
++func TestSplit_InactiveBeforeActivation(t *testing.T) {
++	c := cfg(500, 1000) // activates at block 1000
++	fee, net := c.Split(999, gross2())
++	if !fee.IsZero() {
++		t.Fatalf("fee taken before activation: %s", fee)
++	}
++	if net.Cmp(gross2()) != 0 {
++		t.Fatalf("net != gross before activation")
++	}
++	// At activation it bites.
++	fee, _ = c.Split(1000, gross2())
++	if fee.IsZero() {
++		t.Fatalf("no fee at activation block")
++	}
++}
++
++func TestSplit_NilConfigIsDisabled(t *testing.T) {
++	var c *Config // nil — genesis omitted "hathorFee"
++	fee, net := c.Split(5, gross2())
++	if !fee.IsZero() || net.Cmp(gross2()) != 0 {
++		t.Fatalf("nil config should be a no-op; got fee=%s net=%s", fee, net)
++	}
++}
++
++// --- Block-validity rule: the heart of the enforcement ---
++
++func TestValidate_ExactFeeValid(t *testing.T) {
++	c := cfg(500, 0)
++	required := c.RequiredFee(1, gross2())
++	if err := c.ValidateBlockFee(1, gross2(), required); err != nil {
++		t.Fatalf("exact fee rejected: %v", err)
++	}
++}
++
++func TestValidate_ShortFeeInvalid(t *testing.T) {
++	c := cfg(500, 0)
++	required := c.RequiredFee(1, gross2())
++	// Credit one wei less than required — the canonical "pool tried to dodge" case.
++	short := new(uint256.Int).Sub(required, uint256.NewInt(1))
++	if err := c.ValidateBlockFee(1, gross2(), short); err != ErrFeeShort {
++		t.Fatalf("short fee accepted; want ErrFeeShort, got %v", err)
++	}
++}
++
++func TestValidate_ZeroCreditedInvalid(t *testing.T) {
++	c := cfg(500, 0)
++	// A third-party pool that paid Hathor NOTHING out of issuance — must be invalid.
++	if err := c.ValidateBlockFee(1, gross2(), uint256.NewInt(0)); err != ErrFeeShort {
++		t.Fatalf("zero-fee block accepted; want ErrFeeShort, got %v", err)
++	}
++}
++
++func TestValidate_OverpaymentAllowed(t *testing.T) {
++	c := cfg(500, 0)
++	required := c.RequiredFee(1, gross2())
++	over := new(uint256.Int).Add(required, uint256.NewInt(12345))
++	if err := c.ValidateBlockFee(1, gross2(), over); err != nil {
++		t.Fatalf("overpayment rejected: %v", err)
++	}
++}
++
++func TestValidate_ZeroFeeAddressRejected(t *testing.T) {
++	c := &Config{FeeBps: 500, FeeAddress: common.Address{}, ActivationBlock: 0}
++	if err := c.ValidateBlockFee(1, gross2(), uint256.NewInt(1)); err != ErrNoFeeAddress {
++		t.Fatalf("zero fee address not caught; got %v", err)
++	}
++}
++
++func TestValidate_InactiveAlwaysValid(t *testing.T) {
++	c := cfg(500, 0)
++	// Module disabled (bps 0) — any credit, including zero, is fine.
++	c.FeeBps = 0
++	if err := c.ValidateBlockFee(1, gross2(), uint256.NewInt(0)); err != nil {
++		t.Fatalf("disabled module rejected a block: %v", err)
++	}
++}
++
++func TestGenesisConfig_ToConfig(t *testing.T) {
++	g := &GenesisConfig{FeeBps: 500, FeeAddress: hathorAddr, ActivationBlock: 42}
++	c := g.ToConfig()
++	if c.FeeBps != 500 || c.FeeAddress != hathorAddr || c.ActivationBlock != 42 {
++		t.Fatalf("ToConfig mismatch: %+v", c)
++	}
++	var nilg *GenesisConfig
++	if nilg.ToConfig() != nil {
++		t.Fatalf("nil genesis should yield nil config (module disabled)")
++	}
++}
+diff --git a/params/hathorfees/pot_test.go b/params/hathorfees/pot_test.go
+new file mode 100644
+index 000000000..8f6e86145
+--- /dev/null
++++ b/params/hathorfees/pot_test.go
+@@ -0,0 +1,154 @@
++// Copyright 2026 The PRANA / Van Kush Family Research Institute Authors.
++// SPDX-License-Identifier: LGPL-3.0-or-later
++
++package hathorfees
++
++import (
++	"encoding/json"
++	"testing"
++
++	"github.com/ethereum/go-ethereum/common"
++	"github.com/holiman/uint256"
++)
++
++var (
++	potTreasury = common.HexToAddress("0xF129608bF3BA681012CF82DFfCfBB92563df987e")
++	potPool     = common.HexToAddress("0xBD749b16E83D0c81fbCE8fC72005E81f3b3180ff")
++	potSealer   = common.HexToAddress("0x00000000000000000000000000000000000005ea")
++)
++
++func u64p(v uint64) *uint64 { return &v }
++
++func potCfg(f uint64) *Config {
++	return &Config{FeeBps: 200, FeeAddress: potTreasury, ActivationBlock: 40000, PotAddress: potPool, PotActivationBlock: u64p(f)}
++}
++
++func TestPot_AbsentIsLegacy(t *testing.T) {
++	c := &Config{FeeBps: 200, FeeAddress: potTreasury, ActivationBlock: 40000}
++	for _, n := range []uint64{0, 39999, 40000, 1 << 40} {
++		if c.PotActive(n) || c.RewardRecipient(n, potSealer) != potSealer {
++			t.Fatalf("pot must be inert when not configured (n=%d)", n)
++		}
++	}
++	if err := c.Validate(); err != nil {
++		t.Fatalf("legacy config must validate: %v", err)
++	}
++	var nilc *Config
++	if nilc.PotActive(5) || nilc.RewardRecipient(5, potSealer) != potSealer || nilc.Validate() != nil {
++		t.Fatal("nil config must be inert and valid")
++	}
++}
++
++func TestPot_BeforeAtAfterF(t *testing.T) {
++	const F = 200000
++	c := potCfg(F)
++	cases := []struct {
++		n    uint64
++		want common.Address
++	}{{0, potSealer}, {F - 1, potSealer}, {F, potPool}, {F + 1, potPool}, {1 << 40, potPool}}
++	for _, tc := range cases {
++		if got := c.RewardRecipient(tc.n, potSealer); got != tc.want {
++			t.Fatalf("n=%d: recipient %s want %s", tc.n, got.Hex(), tc.want.Hex())
++		}
++	}
++	// Split amounts are unchanged by the pot (2% fee both sides of F).
++	gross := uint256.MustFromDecimal("2000000000000000000")
++	for _, n := range []uint64{F - 1, F, F + 1} {
++		fee, net := c.Split(n, gross)
++		if fee.Uint64() != 40000000000000000 || net.Uint64() != 1960000000000000000 {
++			t.Fatalf("n=%d split fee=%s net=%s", n, fee, net)
++		}
++	}
++}
++
++func TestPot_RoundingConserves(t *testing.T) {
++	c := potCfg(50000)
++	for _, g := range []string{"0", "1", "49", "50", "51", "99", "10001", "62500000000000000", "1937500000000000001", "2000000000000000000", "115792089237316195423570985008687907853269984665640564039457584007913129639"} {
++		gross := uint256.MustFromDecimal(g)
++		fee, net := c.Split(50000, gross)
++		want := new(uint256.Int).Mul(gross, uint256.NewInt(200))
++		want.Div(want, uint256.NewInt(BpsDenom))
++		if fee.Cmp(want) != 0 {
++			t.Fatalf("gross=%s fee=%s want floor %s", g, fee, want)
++		}
++		if new(uint256.Int).Add(fee, net).Cmp(gross) != 0 {
++			t.Fatalf("gross=%s fee+net != gross (dust lost)", g)
++		}
++		// pot receives exactly net; sealer receives nothing
++		if err := c.ValidateBlockPayout(50000, gross, fee, net); err != nil {
++			t.Fatalf("exact payout rejected: %v", err)
++		}
++	}
++}
++
++func TestPot_ZeroAddressRejected(t *testing.T) {
++	c := &Config{FeeBps: 200, FeeAddress: potTreasury, PotActivationBlock: u64p(100)}
++	if err := c.Validate(); err != ErrNoPotAddress {
++		t.Fatalf("Validate: got %v want ErrNoPotAddress", err)
++	}
++	g := uint256.NewInt(1000000)
++	fee, net := c.Split(100, g)
++	if err := c.ValidateBlockPayout(100, g, fee, net); err != ErrNoPotAddress {
++		t.Fatalf("ValidateBlockPayout when active: got %v", err)
++	}
++	if err := c.ValidateBlockPayout(99, g, fee, net); err != nil {
++		t.Fatalf("before F the pot rule must not apply: %v", err)
++	}
++}
++
++func TestPot_ValidateBlockPayout(t *testing.T) {
++	c := potCfg(50000)
++	g := uint256.MustFromDecimal("2000000000000000000")
++	fee, net := c.Split(50000, g)
++	short := new(uint256.Int).Sub(net, uint256.NewInt(1))
++	if err := c.ValidateBlockPayout(50000, g, fee, short); err != ErrPotShort {
++		t.Fatalf("short pot: got %v", err)
++	}
++	if err := c.ValidateBlockPayout(50000, g, new(uint256.Int).Sub(fee, uint256.NewInt(1)), net); err != ErrFeeShort {
++		t.Fatalf("short fee: got %v", err)
++	}
++	// before F: pot credit irrelevant (sealer is paid), fee rule still applies
++	if err := c.ValidateBlockPayout(49999, g, fee, uint256.NewInt(0)); err != nil {
++		t.Fatalf("before F: %v", err)
++	}
++}
++
++func TestPot_GenesisJSON(t *testing.T) {
++	// Legacy object (exactly what mainnet stores) must round-trip byte-identically.
++	legacy := `{"feeBps":200,"feeAddress":"0xf129608bf3ba681012cf82dffcfbb92563df987e","activationBlock":40000}`
++	var g GenesisConfig
++	if err := json.Unmarshal([]byte(legacy), &g); err != nil {
++		t.Fatal(err)
++	}
++	out, _ := json.Marshal(&g)
++	if string(out) != legacy {
++		t.Fatalf("legacy re-encode changed:\n got %s\nwant %s", out, legacy)
++	}
++	if c := g.ToConfig(); c.PotActivationBlock != nil || c.PotAddress != (common.Address{}) {
++		t.Fatal("legacy must decode with pot off")
++	}
++	withPot := `{"feeBps":200,"feeAddress":"0xf129608bf3ba681012cf82dffcfbb92563df987e","activationBlock":40000,"potAddress":"0xbd749b16e83d0c81fbce8fc72005e81f3b3180ff","potActivationBlock":175000}`
++	var g2 GenesisConfig
++	if err := json.Unmarshal([]byte(withPot), &g2); err != nil {
++		t.Fatal(err)
++	}
++	c := g2.ToConfig()
++	if c.PotAddress != potPool || c.PotActivationBlock == nil || *c.PotActivationBlock != 175000 {
++		t.Fatalf("pot fields not decoded: %+v", c)
++	}
++	*g2.PotActivationBlock = 1 // ToConfig must copy, not alias
++	if *c.PotActivationBlock != 175000 {
++		t.Fatal("ToConfig aliases genesis pointer")
++	}
++	out2, _ := json.Marshal(&g2)
++	if string(out2) == legacy {
++		t.Fatal("pot fields lost on re-encode")
++	}
++	// potActivationBlock without potAddress decodes (no error at decode — a decode error
++	// would make rawdb.ReadChainConfig drop the stored config) but fails Validate.
++	var g3 GenesisConfig
++	_ = json.Unmarshal([]byte(`{"feeBps":200,"feeAddress":"0xf129608bf3ba681012cf82dffcfbb92563df987e","activationBlock":0,"potActivationBlock":5}`), &g3)
++	if g3.ToConfig().Validate() != ErrNoPotAddress {
++		t.Fatal("missing potAddress must fail Validate")
++	}
++}
+diff --git a/params/mutations/rewards.go b/params/mutations/rewards.go
+index 9c7eef651..2c0e8f3a3 100644
+--- a/params/mutations/rewards.go
++++ b/params/mutations/rewards.go
+@@ -23,6 +23,10 @@ import (
+ 	"github.com/ethereum/go-ethereum/params"
+ 	"github.com/ethereum/go-ethereum/params/types/ctypes"
+ 	"github.com/holiman/uint256"
++
++	// PRANA: consensus-level Hathor Fees Module. The split lives here so it is part
++	// of the canonical state transition and cannot be bypassed by any pool.
++	hathorfees "github.com/ethereum/go-ethereum/params/hathorfees"
+ )
+ 
+ // Some weird constants to avoid constant memory allocs for them.
+@@ -63,12 +67,53 @@ func GetRewards(config ctypes.ChainConfigurator, header *types.Header, uncles []
+ 
+ // AccumulateRewards credits the coinbase of the given block with the mining
+ // reward. The coinbase of each uncle block is also rewarded.
++//
++// PRANA — Hathor Fees Module (Devcoin-style, consensus-enforced)
++//
++//	Before the block sealer is credited, a protocol fee is split off the sealer's
++//	(winner's) block reward and credited to the Hathor fee address. This is the
++//	rewards-pool DRAW: the fee bites at issuance, in the state transition every full
++//	node re-executes, so it is un-bypassable. A block that does not apply this split
++//	produces a different state root and is rejected by all honest nodes — that is the
++//	block-validity rule, enforced implicitly by the state root and explicitly by
++//	hathorfees.Config.ValidateBlockFee.
++//
++//	Scope: the fee is taken from the WINNER'S block reward only (not from uncle
++//	rewards), matching the Devcoin "winner pays the receiver list" shape and keeping
++//	uncle economics unchanged. Hathor's share scales with issuance, which is what the
++//	directive intends ("her percentage of mining fees ... because we distribute the AI
++//	workload"). If the module is inactive (no genesis "hathorFee", zero bps, or before
++//	the activation block), the behavior is identical to stock core-geth.
+ func AccumulateRewards(config ctypes.ChainConfigurator, state *state.StateDB, header *types.Header, uncles []*types.Header) {
+ 	minerReward, uncleRewards := GetRewards(config, header, uncles)
++	hf := hathorFeeConfig(config)
++	number := header.Number.Uint64()
++	// PRANA pot hardfork: from hathorFee.potActivationBlock, uncle rewards are paid to the
++	// pool pot instead of the uncle's coinbase (RewardRecipient == uncle.Coinbase before).
+ 	for i, uncle := range uncles {
+-		state.AddBalance(uncle.Coinbase, uncleRewards[i])
++		state.AddBalance(hf.RewardRecipient(number, uncle.Coinbase), uncleRewards[i])
++	}
++
++	// PRANA: split the Hathor protocol fee off the winner's reward.
++	fee, net := hf.Split(number, minerReward)
++	if !fee.IsZero() {
++		state.AddBalance(hf.FeeAddress, fee)
++	}
++	// PRANA pot hardfork: the net winner reward goes to the pool pot from
++	// potActivationBlock (sealer coinbase gets 0 issuance); before it, to the sealer.
++	state.AddBalance(hf.RewardRecipient(number, header.Coinbase), net)
++}
++
++// hathorFeeConfig extracts the Hathor Fees Module config from the chain configurator.
++// It returns nil (module disabled — full reward to the sealer, identical to upstream)
++// when the chain config carries no Hathor fee parameters. The concrete *genesisT.Genesis
++// / chainConfig types expose GetHathorFee() (added by the genesis-config patch); we read
++// it through a narrow interface so this file does not import the params concrete types.
++func hathorFeeConfig(config ctypes.ChainConfigurator) *hathorfees.Config {
++	if hp, ok := config.(interface{ GetHathorFee() *hathorfees.Config }); ok {
++		return hp.GetHathorFee()
+ 	}
+-	state.AddBalance(header.Coinbase, minerReward)
++	return nil
+ }
+ 
+ // As of "Era 2" (zero-index era 1), uncle miners and winners are rewarded equally for each included block.
+diff --git a/params/mutations/rewards_classic.go b/params/mutations/rewards_classic.go
+index 053910744..52862e6fa 100644
+--- a/params/mutations/rewards_classic.go
++++ b/params/mutations/rewards_classic.go
+@@ -25,7 +25,7 @@ import (
+ )
+ 
+ func ecip1017BlockReward(config ctypes.ChainConfigurator, header *types.Header, uncles []*types.Header) (*uint256.Int, []*uint256.Int) {
+-	blockReward := vars.FrontierBlockReward
++	blockReward := vars.EIP1234FBlockReward // PRANA: 2 PRANA base (not Frontier 5); 10%/era decay via retuned ECIP-1017
+ 
+ 	// Ensure value 'era' is configured.
+ 	eraLen := config.GetEthashECIP1017EraRounds()
+diff --git a/params/mutations/rewards_pot_test.go b/params/mutations/rewards_pot_test.go
+new file mode 100644
+index 000000000..9b917d61f
+--- /dev/null
++++ b/params/mutations/rewards_pot_test.go
+@@ -0,0 +1,134 @@
++// Copyright 2026 The PRANA / Van Kush Family Research Institute Authors.
++// SPDX-License-Identifier: LGPL-3.0-or-later
++
++package mutations_test
++
++import (
++	"encoding/json"
++	"math/big"
++	"strings"
++	"testing"
++
++	"github.com/ethereum/go-ethereum/common"
++	"github.com/ethereum/go-ethereum/core/rawdb"
++	"github.com/ethereum/go-ethereum/core/state"
++	"github.com/ethereum/go-ethereum/core/types"
++	"github.com/ethereum/go-ethereum/params/mutations"
++	"github.com/ethereum/go-ethereum/params/types/coregeth"
++	"github.com/holiman/uint256"
++)
++
++// The exact chain config stored on all three PRANA mainnet nodes (admin_nodeInfo,
++// 2026-10-17), with the hathorFee object substituted per test.
++const mainnetCfgTmpl = `{"chainId":712217,"networkId":712217,"eip2FBlock":0,"eip7FBlock":0,"eip150Block":0,"eip155Block":0,"eip160Block":0,"eip161FBlock":0,"eip170FBlock":0,"eip100FBlock":0,"eip140FBlock":0,"eip198FBlock":0,"eip211FBlock":0,"eip212FBlock":0,"eip213FBlock":0,"eip214FBlock":0,"eip658FBlock":0,"eip145FBlock":0,"eip1014FBlock":0,"eip1052FBlock":0,"eip1283FBlock":0,"petersburgBlock":0,"eip152FBlock":0,"eip1108FBlock":0,"eip1344FBlock":0,"eip1884FBlock":0,"eip2028FBlock":0,"eip2200FBlock":0,"eip2384FBlock":0,"eip3554FBlock":0,"ecip1017FBlock":10000,"ecip1017EraRounds":2427507,"hathorFee":HF,"ecip1099FBlock":40000,"eip2565FBlock":0,"eip2718FBlock":0,"eip2929FBlock":0,"eip3198FBlock":0,"eip2930FBlock":0,"eip1559FBlock":0,"eip3541FBlock":0,"eip3529FBlock":0,"ethash":{},"difficultyBombDelays":{"0x0":"0x9402a0"},"blockReward":{"0x0":"0x1bc16d674ec80000"},"requireBlockHashes":null}`
++
++const (
++	legacyHF = `{"feeBps":200,"feeAddress":"0xf129608bf3ba681012cf82dffcfbb92563df987e","activationBlock":40000}`
++	potHF    = `{"feeBps":200,"feeAddress":"0xf129608bf3ba681012cf82dffcfbb92563df987e","activationBlock":40000,"potAddress":"0xBD749b16E83D0c81fbCE8fC72005E81f3b3180ff","potActivationBlock":200000}`
++	F        = 200000
++)
++
++var (
++	treasury = common.HexToAddress("0xF129608bF3BA681012CF82DFfCfBB92563df987e")
++	pot      = common.HexToAddress("0xBD749b16E83D0c81fbCE8fC72005E81f3b3180ff")
++	sealer   = common.HexToAddress("0x1111111111111111111111111111111111111111")
++	uncleCB  = []common.Address{common.HexToAddress("0x2222222222222222222222222222222222222222"), common.HexToAddress("0x3333333333333333333333333333333333333333")}
++)
++
++func loadCfg(t *testing.T, hf string) *coregeth.CoreGethChainConfig {
++	var c coregeth.CoreGethChainConfig
++	if err := json.Unmarshal([]byte(strings.Replace(mainnetCfgTmpl, "HF", hf, 1)), &c); err != nil {
++		t.Fatal(err)
++	}
++	return &c
++}
++
++func run(t *testing.T, hf string, n uint64, nUncles int) (*state.StateDB, *uint256.Int, []*uint256.Int) {
++	cfg := loadCfg(t, hf)
++	st, err := state.New(types.EmptyRootHash, state.NewDatabase(rawdb.NewMemoryDatabase()), nil)
++	if err != nil {
++		t.Fatal(err)
++	}
++	h := &types.Header{Number: new(big.Int).SetUint64(n), Coinbase: sealer}
++	var uncles []*types.Header
++	for i := 0; i < nUncles; i++ {
++		uncles = append(uncles, &types.Header{Number: new(big.Int).SetUint64(n - 1), Coinbase: uncleCB[i]})
++	}
++	mutations.AccumulateRewards(cfg, st, h, uncles)
++	mr, ur := mutations.GetRewards(cfg, h, uncles)
++	return st, mr, ur
++}
++
++func feeOf(gross *uint256.Int) (*uint256.Int, *uint256.Int) {
++	fee := new(uint256.Int).Mul(gross, uint256.NewInt(200))
++	fee.Div(fee, uint256.NewInt(10000))
++	return fee, new(uint256.Int).Sub(gross, fee)
++}
++
++func TestAccumulateRewards_PotBeforeF_IdenticalToLegacy(t *testing.T) {
++	for _, n := range []uint64{1, 9999, 10000, 39999, 40000, 166710, F - 1} {
++		for u := 0; u <= 2; u++ {
++			a, mr, ur := run(t, legacyHF, n, u)
++			b, _, _ := run(t, potHF, n, u)
++			if a.IntermediateRoot(true) != b.IntermediateRoot(true) {
++				t.Fatalf("n=%d uncles=%d: state root differs before F", n, u)
++			}
++			// and it is the legacy rule: sealer net, treasury fee (>=40000), uncles to own coinbase
++			fee, net := feeOf(mr)
++			if n < 40000 {
++				fee, net = uint256.NewInt(0), mr
++			}
++			if b.GetBalance(sealer).Cmp(net) != 0 || b.GetBalance(treasury).Cmp(fee) != 0 || !b.GetBalance(pot).IsZero() {
++				t.Fatalf("n=%d u=%d: sealer=%s treasury=%s pot=%s", n, u, b.GetBalance(sealer), b.GetBalance(treasury), b.GetBalance(pot))
++			}
++			for i := 0; i < u; i++ {
++				if b.GetBalance(uncleCB[i]).Cmp(ur[i]) != 0 {
++					t.Fatalf("n=%d uncle %d not paid to own coinbase before F", n, i)
++				}
++			}
++		}
++	}
++}
++
++func TestAccumulateRewards_PotAtAndAfterF(t *testing.T) {
++	for _, n := range []uint64{F, F + 1, F + 2427507} { // incl. a later ECIP-1017 era
++		for u := 0; u <= 2; u++ {
++			st, mr, ur := run(t, potHF, n, u)
++			fee, net := feeOf(mr)
++			wantPot := new(uint256.Int).Set(net)
++			for i := 0; i < u; i++ {
++				wantPot.Add(wantPot, ur[i])
++				if !st.GetBalance(uncleCB[i]).IsZero() {
++					t.Fatalf("n=%d: uncle coinbase %d paid after F", n, i)
++				}
++			}
++			if !st.GetBalance(sealer).IsZero() {
++				t.Fatalf("n=%d u=%d: sealer got %s after F (want 0)", n, u, st.GetBalance(sealer))
++			}
++			if st.GetBalance(treasury).Cmp(fee) != 0 {
++				t.Fatalf("n=%d: treasury %s want %s", n, st.GetBalance(treasury), fee)
++			}
++			if st.GetBalance(pot).Cmp(wantPot) != 0 {
++				t.Fatalf("n=%d u=%d: pot %s want %s", n, u, st.GetBalance(pot), wantPot)
++			}
++			// total issuance unchanged vs legacy at the same height
++			lg, _, _ := run(t, legacyHF, n, u)
++			sumL := new(uint256.Int).Add(lg.GetBalance(sealer), lg.GetBalance(treasury))
++			for i := 0; i < u; i++ {
++				sumL.Add(sumL, lg.GetBalance(uncleCB[i]))
++			}
++			sumP := new(uint256.Int).Add(st.GetBalance(pot), st.GetBalance(treasury))
++			if sumL.Cmp(sumP) != 0 {
++				t.Fatalf("n=%d: issuance changed legacy=%s pot=%s", n, sumL, sumP)
++			}
++			// treasury share is exactly 2% of the winner reward, 98% to pot
++			if u == 0 && n == F {
++				t.Logf("block F: winner reward %s -> treasury %s (2%%), pot %s (98%%), sealer 0", mr, fee, net)
++			}
++			// a block applying the OLD rule after F has a different state root -> rejected
++			if lg.IntermediateRoot(true) == st.IntermediateRoot(true) {
++				t.Fatalf("n=%d: legacy and pot roots equal after F", n)
++			}
++		}
++	}
++}
+diff --git a/params/types/coregeth/chain_config.go b/params/types/coregeth/chain_config.go
+index 3eb07bc82..6a55193cc 100644
+--- a/params/types/coregeth/chain_config.go
++++ b/params/types/coregeth/chain_config.go
+@@ -24,6 +24,7 @@ import (
+ 	"github.com/ethereum/go-ethereum/common"
+ 	"github.com/ethereum/go-ethereum/params/confp"
+ 	"github.com/ethereum/go-ethereum/params/types/ctypes"
++	hathorfees "github.com/ethereum/go-ethereum/params/hathorfees"
+ )
+ 
+ // CoreGethChainConfig is the core config which determines the blockchain settings.
+@@ -182,6 +183,7 @@ type CoreGethChainConfig struct {
+ 	ECIP1010Length     *big.Int `json:"ecip1010Length,omitempty"`     // ECIP1010 length
+ 	ECIP1017FBlock     *big.Int `json:"ecip1017FBlock,omitempty"`
+ 	ECIP1017EraRounds  *big.Int `json:"ecip1017EraRounds,omitempty"` // ECIP1017 era rounds
++	HathorFee *hathorfees.GenesisConfig `json:"hathorFee,omitempty"` // PRANA: consensus 2% protocol fee
+ 	ECIP1080FBlock     *big.Int `json:"ecip1080FBlock,omitempty"`
+ 
+ 	ECIP1099FBlock           *big.Int `json:"ecip1099FBlock,omitempty"`                 // ECIP1099 etchash HF block
+diff --git a/params/types/coregeth/chain_config_configurator.go b/params/types/coregeth/chain_config_configurator.go
+index 3f5620de3..01674cde6 100644
+--- a/params/types/coregeth/chain_config_configurator.go
++++ b/params/types/coregeth/chain_config_configurator.go
+@@ -35,6 +35,7 @@ import (
+ 	"github.com/ethereum/go-ethereum/common"
+ 	"github.com/ethereum/go-ethereum/common/math"
+ 	"github.com/ethereum/go-ethereum/params/types/ctypes"
++	hathorfees "github.com/ethereum/go-ethereum/params/hathorfees"
+ 	"github.com/ethereum/go-ethereum/params/types/internal"
+ 	"github.com/ethereum/go-ethereum/params/vars"
+ )
+@@ -1255,6 +1256,13 @@ func (c *CoreGethChainConfig) SetEthashECIP1017EraRounds(n *uint64) error {
+ 	return nil
+ }
+ 
++// GetHathorFee returns the PRANA consensus protocol-fee config parsed from the genesis
++// "hathorFee" object, or nil when unset (module disabled). This is the method AccumulateRewards
++// type-asserts for; without it the 2% fee is silently skipped.
++func (c *CoreGethChainConfig) GetHathorFee() *hathorfees.Config {
++	return c.HathorFee.ToConfig()
++}
++
+ func (c *CoreGethChainConfig) GetEthashEIP100BTransition() *uint64 {
+ 	if c.GetConsensusEngineType() != ctypes.ConsensusEngineT_Ethash {
+ 		return nil

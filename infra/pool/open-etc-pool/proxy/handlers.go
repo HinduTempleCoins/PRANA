@@ -1,0 +1,167 @@
+package proxy
+
+import (
+	"log"
+	"regexp"
+	"strings"
+	"sync"
+
+	"github.com/etclabscore/open-etc-pool/rpc"
+	"github.com/etclabscore/open-etc-pool/util"
+)
+
+var (
+	noncePattern  = regexp.MustCompile("^0x[0-9a-f]{16}$")
+	hashPattern   = regexp.MustCompile("^0x[0-9a-f]{64}$")
+	workerPattern = regexp.MustCompile("^[0-9a-zA-Z-_]{1,8}$")
+)
+
+// splitLogin: miners send "ADDRESS.WORKER" (lolMiner/T-Rex/GMiner/HiveOS) or "ADDRESS/WORKER"; the part
+// before the first "." or "/" is the payout address, the rest is the rig name.
+func splitLogin(raw string) (addr, worker string) {
+	if i := strings.IndexAny(raw, "./"); i > 0 {
+		return raw[:i], raw[i+1:]
+	}
+	return raw, ""
+}
+
+// validLogin (PRANA): the payout address (case preserved) must be a valid, non-zero address and not on the
+// deny list (pot, treasury). With requireChecksum, a MIXED-case address must pass its EIP-55 checksum (that
+// catches typos); an all-lowercase or all-uppercase address carries no checksum and is accepted, as every
+// Ethereum-family pool does, because explorers and many wallets show addresses that way.
+func (s *ProxyServer) validLogin(raw string) (bool, string) {
+	if !util.IsValidHexAddress(raw) {
+		return false, "Invalid login: use your PRANA address (0x… 40 hex characters), optionally .rigname"
+	}
+	body := raw[2:]
+	mixed := strings.ToLower(body) != body && strings.ToUpper(body) != body
+	if s.config.Proxy.RequireChecksum && mixed && !util.IsChecksumAddress(raw) {
+		return false, "Invalid login: use your EIP-55 checksummed PRANA address"
+	}
+	l := strings.ToLower(raw)
+	for _, d := range s.config.Proxy.DenyLogins {
+		if strings.ToLower(d) == l {
+			return false, "Invalid login: reserved address"
+		}
+	}
+	return true, ""
+}
+
+func (s *ProxyServer) handleLoginRPC(cs *Session, params []string, id string) (bool, *ErrorReply) {
+	if len(params) == 0 {
+		return false, &ErrorReply{Code: -1, Message: "Invalid params"}
+	}
+
+	addr, worker := splitLogin(strings.TrimSpace(params[0]))
+	if ok, msg := s.validLogin(addr); !ok {
+		s.policy.ApplyMalformedPolicy(cs.ip)
+		return false, &ErrorReply{Code: -1, Message: msg}
+	}
+	login := strings.ToLower(addr)
+	if workerPattern.MatchString(worker) {
+		cs.worker = worker
+	}
+
+	// Parallel policy check
+	policyOk := make(chan bool, 1)
+	go func() {
+		policyOk <- s.policy.ApplyLoginPolicy(login, cs.ip)
+	}()
+
+	if !<-policyOk {
+		return false, &ErrorReply{Code: -1, Message: "You are blacklisted"}
+	}
+
+	cs.login = login
+	s.registerSession(cs)
+	log.Printf("Stratum miner connected %v@%v", login, cs.ip)
+	return true, nil
+}
+
+// Optimized work handler
+func (s *ProxyServer) handleGetWorkRPC(cs *Session) ([]string, *ErrorReply) {
+	t := s.currentBlockTemplate()
+	if t == nil || len(t.Header) == 0 || s.isSick() {
+		return nil, &ErrorReply{Code: 0, Message: "Work not ready"}
+	}
+	return []string{t.Header, t.Seed, s.diff}, nil
+}
+
+// Optimized submit handler with parallel validation
+func (s *ProxyServer) handleTCPSubmitRPC(cs *Session, id string, params []string) (bool, *ErrorReply) {
+	s.sessionsMu.RLock()
+	_, ok := s.sessions[cs]
+	s.sessionsMu.RUnlock()
+
+	if !ok {
+		return false, &ErrorReply{Code: 25, Message: "Not subscribed"}
+	}
+
+	// Fast validation
+	if len(params) != 3 {
+		s.policy.ApplyMalformedPolicy(cs.ip)
+		return false, &ErrorReply{Code: -1, Message: "Invalid params"}
+	}
+
+	// Worker name processing: the stratum "worker" field, else the rig name from ADDRESS.RIG at login
+	if !workerPattern.MatchString(id) {
+		id = cs.worker
+		if !workerPattern.MatchString(id) {
+			id = "0"
+		}
+	}
+
+	// Parallel pattern validation
+	var valid [3]bool
+	var wg sync.WaitGroup
+	wg.Add(3)
+
+	validate := func(i int, pattern *regexp.Regexp, s string) {
+		defer wg.Done()
+		valid[i] = pattern.MatchString(s)
+	}
+
+	go validate(0, noncePattern, params[0])
+	go validate(1, hashPattern, params[1])
+	go validate(2, hashPattern, params[2])
+
+	wg.Wait()
+
+	if !valid[0] || !valid[1] || !valid[2] {
+		s.policy.ApplyMalformedPolicy(cs.ip)
+		return false, &ErrorReply{Code: -1, Message: "Malformed PoW result"}
+	}
+
+	t := s.currentBlockTemplate()
+	exist, validShare := s.processShare(cs.login, id, cs.ip, t, params)
+	ok = s.policy.ApplySharePolicy(cs.ip, !exist && validShare)
+
+	if exist {
+		return false, &ErrorReply{Code: 22, Message: "Duplicate share"}
+	}
+
+	if !validShare {
+		if !ok {
+			return false, &ErrorReply{Code: 23, Message: "Invalid share"}
+		}
+		return false, nil
+	}
+
+	if !ok {
+		return true, &ErrorReply{Code: -1, Message: "High rate of invalid shares"}
+	}
+	return true, nil
+}
+
+// Optimized block handler
+func (s *ProxyServer) handleGetBlockByNumberRPC() *rpc.GetBlockReplyPart {
+	if t := s.currentBlockTemplate(); t != nil {
+		return t.GetPendingBlockCache
+	}
+	return nil
+}
+
+func (s *ProxyServer) handleUnknownRPC(cs *Session, m string) *ErrorReply {
+	s.policy.ApplyMalformedPolicy(cs.ip)
+	return &ErrorReply{Code: -3, Message: "Method not found"}
+}
